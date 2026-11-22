@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#c9ecff">
-<meta name="description" content="Шахматный лес: добрая игра для малышей, первые шаги к шахматам.">
+<meta name="description" content="Шахматный лес: первая ступень к большим шахматам для детей от 2 лет.">
 <meta property="og:title" content="Шахматный лес">
-<meta property="og:description" content="Добрая игра для малышей: первые шаги к шахматам.">
+<meta property="og:description" content="Первая ступень к большим шахматам для детей от 2 лет.">
 <meta property="og:type" content="website">
 <title>Шахматный лес</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='44' y='76' width='12' height='18' rx='2' fill='%238a5a2b'/%3E%3Cpath d='M50 44l36 36H14z' fill='%23237032'/%3E%3Cpath d='M50 24l31 36H19z' fill='%232b8a3e'/%3E%3Cpath d='M50 6l26 34H24z' fill='%232f9e44'/%3E%3C/svg%3E">
@@ -14,44 +14,83 @@
 </head>
 <body>
 
-<main id="menu" class="menu">
+<!-- Landing page (about the method) -->
+<main id="intro" class="intro" hidden>
+  <div class="intro-top">
+    <div class="lang" role="group" data-t-aria="lang.label">
+      <button type="button" data-lang="ru">RU</button><button type="button" data-lang="sk">SK</button><button type="button" data-lang="en">EN</button>
+    </div>
+  </div>
+  <div class="intro-scroll" id="introScroll">
+    <article class="intro-card">
+      <div class="intro-hero">
+        <h1 class="intro-title" data-t="intro.title"></h1>
+        <p class="intro-sub" data-t="intro.subtitle"></p>
+        <ul class="sheet" id="sheet" data-t-aria="intro.sheet"></ul>
+      </div>
+      <div class="intro-text">
+        <p class="intro-lead" data-t="intro.lead"></p>
+        <h2 class="intro-h" data-t="intro.h"></h2>
+        <ul class="dev">
+          <li><span class="dev-ico" data-art="brain"></span><p data-t-html="intro.p1.html"></p><ul class="pairs" id="pairs"></ul></li>
+          <li><span class="dev-ico" data-art="board"></span><p data-t-html="intro.p2.html"></p></li>
+          <li><span class="dev-ico" data-art="target"></span><p data-t-html="intro.p3.html"></p></li>
+        </ul>
+        <p class="maps" data-t="intro.maps"></p>
+      </div>
+    </article>
+  </div>
+  <div class="intro-bottom">
+    <button type="button" class="btn btn-go" id="btnGo"><span class="go-ico" data-art="tree"></span><span data-t="intro.go"></span></button>
+    <label class="skip"><input type="checkbox" id="skipIntro"><span data-t="intro.skip"></span></label>
+  </div>
+</main>
+
+<main id="menu" class="menu" hidden>
+  <div class="menu-corner">
+    <button type="button" class="chip chip-icon" id="btnAboutMenu" data-t-aria="about"><span data-art="info"></span></button>
+    <div class="lang" role="group" data-t-aria="lang.label">
+      <button type="button" data-lang="ru">RU</button><button type="button" data-lang="sk">SK</button><button type="button" data-lang="en">EN</button>
+    </div>
+  </div>
   <div class="menu-card">
     <div class="menu-animals" aria-hidden="true">
       <span data-art="hare"></span><span data-art="fox"></span><span data-art="lion"></span><span data-art="lynx"></span><span data-art="squirrel"></span>
     </div>
-    <h1 class="title">Шахматный лес</h1>
-    <p class="subtitle">Лесная игра для маленьких шахматистов</p>
+    <h1 class="title" data-t="doc.title"></h1>
+    <p class="subtitle" data-t="menu.subtitle"></p>
     <div class="menu-buttons">
-      <button type="button" class="btn btn-green" id="btnTwo">Играть вдвоём</button>
+      <button type="button" class="btn btn-green" id="btnTwo" data-t="menu.two"></button>
       <div class="cpu-block">
-        <button type="button" class="btn btn-orange" id="btnCpu">Играть с компьютером</button>
+        <button type="button" class="btn btn-orange" id="btnCpu" data-t="menu.cpu"></button>
         <div class="level">
-          <span id="levelLabel">Компьютер:</span>
+          <span id="levelLabel" data-t="menu.level"></span>
           <div class="seg" role="radiogroup" aria-labelledby="levelLabel">
-            <button type="button" role="radio" aria-checked="true" data-level="easy">Добрый</button>
-            <button type="button" role="radio" aria-checked="false" data-level="smart">Хитрый</button>
+            <button type="button" role="radio" aria-checked="true" data-level="easy" data-t="menu.easy"></button>
+            <button type="button" role="radio" aria-checked="false" data-level="smart" data-t="menu.smart"></button>
           </div>
         </div>
       </div>
-      <button type="button" class="btn btn-ghost" id="btnRulesMenu">Правила</button>
+      <button type="button" class="btn btn-ghost" id="btnRulesMenu" data-t="menu.rules"></button>
     </div>
   </div>
 </main>
 
 <main id="game" class="game" hidden>
   <header class="topbar">
-    <button type="button" class="chip" id="btnMenu">Меню</button>
-    <span class="topbar-title">Шахматный лес</span>
-    <button type="button" class="chip" id="btnRules">Правила</button>
-    <button type="button" class="chip chip-icon" id="btnSound" aria-label="Звук" aria-pressed="true"></button>
+    <button type="button" class="chip" id="btnMenu" data-t="game.menu"></button>
+    <span class="topbar-title" data-t="doc.title"></span>
+    <button type="button" class="chip" id="btnRules" data-t="menu.rules"></button>
+    <button type="button" class="chip chip-icon" id="btnAbout" data-t-aria="about"><span data-art="info"></span></button>
+    <button type="button" class="chip chip-icon" id="btnSound" aria-pressed="true"></button>
   </header>
 
   <div class="team blue" id="teamBlue">
     <span class="team-dot" aria-hidden="true"></span>
-    <span class="team-name">Синие</span>
+    <span class="team-name" data-t="team.blue"></span>
     <span class="team-who" id="whoBlue"></span>
-    <span class="team-turn">ходят</span>
-    <span class="den" id="denBlue" role="group" aria-label="Домик синих"></span>
+    <span class="team-turn" data-t="team.turn"></span>
+    <span class="den" id="denBlue" role="group" data-t-aria="den.blue"></span>
   </div>
 
   <div class="board-wrap">
@@ -64,19 +103,19 @@
 
   <div class="team red" id="teamRed">
     <span class="team-dot" aria-hidden="true"></span>
-    <span class="team-name">Красные</span>
+    <span class="team-name" data-t="team.red"></span>
     <span class="team-who" id="whoRed"></span>
-    <span class="team-turn">ходят</span>
-    <span class="den" id="denRed" role="group" aria-label="Домик красных"></span>
+    <span class="team-turn" data-t="team.turn"></span>
+    <span class="den" id="denRed" role="group" data-t-aria="den.red"></span>
   </div>
 
   <div class="controls">
-    <button type="button" class="die" id="die" aria-label="Бросить кубик"><span class="die-face" id="dieFace"></span></button>
+    <button type="button" class="die" id="die" data-t-aria="die"><span class="die-face" id="dieFace"></span></button>
     <div class="talk">
       <p class="message" id="message" role="status" aria-live="polite"></p>
       <div class="actions">
         <span class="steps" id="steps" aria-hidden="true"></span>
-        <button type="button" class="btn btn-small" id="btnDone" hidden>Закончить ход</button>
+        <button type="button" class="btn btn-small" id="btnDone" data-t="done" hidden></button>
       </div>
     </div>
   </div>
@@ -84,52 +123,52 @@
 
 <div id="rules" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
   <div class="card rules-card">
-    <h2 id="rulesTitle">Как играть</h2>
+    <h2 id="rulesTitle" data-t="rules.title"></h2>
     <div class="rules-body">
-      <h3>Как победить</h3>
+      <h3 data-t="rules.h.win"></h3>
       <ul class="rules-list">
-        <li><span class="r-ico" data-art="lion"></span><div><b>Царские обнимашки.</b> Поймай чужого Льва.</div></li>
-        <li><span class="r-ico" data-art="hare"></span><div><b>Заячий триумф.</b> Доведи своего Зайчика до дальнего края леса.</div></li>
+        <li><span class="r-ico" data-art="lion"></span><div data-t-html="rules.lion.html"></div></li>
+        <li><span class="r-ico" data-art="hare"></span><div data-t-html="rules.hare.html"></div></li>
       </ul>
 
-      <h3>Кубик</h3>
-      <p>Команды ходят по очереди. Брось кубик и делай то, что выпало.</p>
+      <h3 data-t="rules.h.die"></h3>
+      <p data-t="rules.die"></p>
       <ul class="rules-list">
-        <li><span class="r-ico r-die" data-art="carrot"></span><div><b>Морковка.</b> Твой Зайчик прыгает к ближайшей морковке и кушает. Пока соперник делает свой ход, Зайчика нельзя поймать.</div></li>
-        <li><span class="r-ico r-die" data-art="tree"></span><div><b>Дерево.</b> Твоя Белочка прыгает на ближайшее дерево и получает орешек. Пока соперник делает свой ход, её никто не достанет.</div></li>
-        <li><span class="r-ico r-die" data-art="star"></span><div><b>Звёздочки.</b> Сколько звёздочек, столько шагов. Шаги можно отдать одному зверю или разделить между разными. Можно закончить ход раньше.</div></li>
-        <li><span class="r-ico r-die"></span><div><b>Пустая грань.</b> Звери решили отдохнуть, ход пропускается.</div></li>
+        <li><span class="r-ico r-die" data-art="carrot"></span><div data-t-html="rules.carrot.html"></div></li>
+        <li><span class="r-ico r-die" data-art="tree"></span><div data-t-html="rules.tree.html"></div></li>
+        <li><span class="r-ico r-die" data-art="star"></span><div data-t-html="rules.stars.html"></div></li>
+        <li><span class="r-ico r-die"></span><div data-t-html="rules.empty.html"></div></li>
       </ul>
 
-      <h3>Как ходят звери</h3>
-      <p>Один шаг каждого зверя:</p>
+      <h3 data-t="rules.h.moves"></h3>
+      <p data-t="rules.oneStep"></p>
       <ul class="rules-list">
-        <li><span class="r-ico" data-art="lion"></span><div><b>Лев</b> идёт на одну клетку в любую сторону. Ловит любого зверя соперника.</div></li>
-        <li><span class="r-ico" data-art="hare"></span><div><b>Зайчик</b> идёт на одну клетку только вперёд. Никого не ловит.</div></li>
-        <li><span class="r-ico" data-art="squirrel"></span><div><b>Белочка</b> прыгает через одну клетку: вперёд, назад или вбок. Никого не ловит.</div></li>
-        <li><span class="r-ico" data-art="fox"></span><div><b>Лисичка</b> идёт на одну клетку наискосок. Ловит Зайчика и Белочку.</div></li>
-        <li><span class="r-ico" data-art="lynx"></span><div><b>Рысь</b> идёт на одну клетку прямо: вперёд, назад или вбок. Ловит Зайчика и Белочку. Только Рысь может поймать Белочку на дереве.</div></li>
+        <li><span class="r-ico" data-art="lion"></span><div data-t-html="rules.m.lion.html"></div></li>
+        <li><span class="r-ico" data-art="hare"></span><div data-t-html="rules.m.hare.html"></div></li>
+        <li><span class="r-ico" data-art="squirrel"></span><div data-t-html="rules.m.squirrel.html"></div></li>
+        <li><span class="r-ico" data-art="fox"></span><div data-t-html="rules.m.fox.html"></div></li>
+        <li><span class="r-ico" data-art="lynx"></span><div data-t-html="rules.m.lynx.html"></div></li>
       </ul>
 
-      <h3>Лесная охота</h3>
+      <h3 data-t="rules.h.hunt"></h3>
       <ul class="rules-plain">
-        <li>Чтобы поймать зверя, наступи на его клетку. Пойманный зверь уходит отдыхать в домик.</li>
-        <li>Поймал зверя, и ход закончился.</li>
-        <li>Перепрыгивать через других зверей умеет только Белочка.</li>
-        <li>Лисичка и Рысь тоже могут поймать чужого Льва.</li>
+        <li data-t="rules.hunt1"></li>
+        <li data-t="rules.hunt2"></li>
+        <li data-t="rules.hunt3"></li>
+        <li data-t="rules.hunt4"></li>
       </ul>
     </div>
-    <button type="button" class="btn btn-green" id="btnRulesClose">Понятно</button>
+    <button type="button" class="btn btn-green" id="btnRulesClose" data-t="rules.close"></button>
   </div>
 </div>
 
 <div id="quit" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="quitTitle">
   <div class="card small-card">
-    <h2 id="quitTitle">Закончить игру?</h2>
-    <p>Звери вернутся на свои места.</p>
+    <h2 id="quitTitle" data-t="quit.title"></h2>
+    <p data-t="quit.text"></p>
     <div class="card-row">
-      <button type="button" class="btn btn-green" id="btnQuitNo">Играть дальше</button>
-      <button type="button" class="btn btn-ghost" id="btnQuitYes">В меню</button>
+      <button type="button" class="btn btn-green" id="btnQuitNo" data-t="quit.no"></button>
+      <button type="button" class="btn btn-ghost" id="btnQuitYes" data-t="quit.yes"></button>
     </div>
   </div>
 </div>
@@ -142,13 +181,15 @@
     <p id="winText"></p>
     <p class="win-who" id="winWho"></p>
     <div class="card-row">
-      <button type="button" class="btn btn-green" id="btnAgain">Играть ещё</button>
-      <button type="button" class="btn btn-ghost" id="btnWinMenu">В меню</button>
+      <button type="button" class="btn btn-green" id="btnAgain" data-t="win.again"></button>
+      <button type="button" class="btn btn-ghost" id="btnWinMenu" data-t="win.menu"></button>
     </div>
   </div>
 </div>
 
 <script src="engine.js"></script>
+<script src="i18n.js"></script>
+<script src="hyphen.js"></script>
 <script src="ui.js"></script>
 </body>
 </html>

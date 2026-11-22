@@ -14,6 +14,7 @@
   // Left to right as each team sees its own row.
   const LINEUP = ['hare', 'fox', 'lion', 'lynx', 'squirrel'];
 
+  const KNIGHT = [[1, 2], [2, 1], [2, -1], [1, -2], [-1, -2], [-2, -1], [-2, 1], [-1, 2]];
   const ORTH = [[0, 1], [1, 0], [0, -1], [-1, 0]];
   const DIAG = [[1, 1], [1, -1], [-1, -1], [-1, 1]];
   const HUNT_DIRS = { lion: ORTH.concat(DIAG), fox: DIAG, lynx: ORTH };
@@ -97,9 +98,10 @@
       return res;
     }
     if (p.kind === 'squirrel') {
-      for (const d of ORTH) {
-        const x = p.x + d[0] * 2;
-        const y = p.y + d[1] * 2;
+      // L-shaped jump like a chess knight, over any animals; it never catches.
+      for (const d of KNIGHT) {
+        const x = p.x + d[0];
+        const y = p.y + d[1];
         if (inside(x, y) && !pieceAt(state, x, y)) res.push({ x, y, capture: null });
       }
       return res;

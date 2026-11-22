@@ -1,12 +1,36 @@
 /*
- * Шахматный лес: screen, pictures, sounds and turn flow.
- * The rules live in engine.js (window.Forest).
+ * Шахматный лес: screen, pictures, sounds, languages and turn flow.
+ * The rules live in engine.js (window.Forest), the texts in i18n.js (window.ForestI18n).
  */
 (function () {
   'use strict';
 
   const F = window.Forest;
+  const I18N = window.ForestI18n;
   const byId = (id) => document.getElementById(id);
+
+  /* ------------------------------------------------------------------ */
+  /* Storage (may be blocked in private windows: never let it break)     */
+  /* ------------------------------------------------------------------ */
+
+  function load(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function save(key, value) {
+    try { if (value === null) localStorage.removeItem(key); else localStorage.setItem(key, value); } catch (e) { /* ignore */ }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Language                                                            */
+  /* ------------------------------------------------------------------ */
+
+  let lang = load('forest-lang');
+  if (I18N.codes.indexOf(lang) < 0) lang = I18N.detect();
+
+  function t(key) {
+    const v = I18N.langs[lang][key];
+    if (v === undefined) return key;
+    if (typeof v !== 'function') return v;
+    return v.apply(null, Array.prototype.slice.call(arguments, 1));
+  }
 
   /* ------------------------------------------------------------------ */
   /* Pictures (inline SVG, so the game looks the same on every device)   */
@@ -41,37 +65,37 @@
       }
       return svg(
         '<g fill="#c26a1b">' + mane + '<circle cx="50" cy="56" r="33"/></g>' +
-        '<circle cx="27" cy="35" r="8.500" fill="#f7c648"/><circle cx="27" cy="35" r="4.200" fill="#e59a3c"/>' +
-        '<circle cx="73" cy="35" r="8.500" fill="#f7c648"/><circle cx="73" cy="35" r="4.200" fill="#e59a3c"/>' +
+        '<circle cx="27" cy="35" r="8.5" fill="#f7c648"/><circle cx="27" cy="35" r="4.2" fill="#e59a3c"/>' +
+        '<circle cx="73" cy="35" r="8.5" fill="#f7c648"/><circle cx="73" cy="35" r="4.2" fill="#e59a3c"/>' +
         '<circle cx="50" cy="58" r="25" fill="#f7c648"/>' +
-        '<ellipse cx="50" cy="69" rx="12.500" ry="9.500" fill="#fdeec4"/>' +
+        '<ellipse cx="50" cy="69" rx="12.5" ry="9.5" fill="#fdeec4"/>' +
         eye(40, 54, 4.2) + eye(60, 54, 4.2) +
-        '<path d="M44.500 62.500h11l-5.500 6z" fill="#7a4420"/>' +
-        '<path d="M50 68.500v3.500m0 0q-4.500 4.500-8.500 1m8.500-1q4.500 4.500 8.500 1" fill="none" stroke="#7a4420" stroke-width="2" stroke-linecap="round"/>' +
+        '<path d="M44.5 62.5h11l-5.5 6z" fill="#7a4420"/>' +
+        '<path d="M50 68.5v3.5m0 0q-4.5 4.5-8.5 1m8.5-1q4.5 4.5 8.5 1" fill="none" stroke="#7a4420" stroke-width="2" stroke-linecap="round"/>' +
         '<path d="M35 25l-3-17 10 8 8-11 8 11 10-8-3 17z" fill="#ffd43b" stroke="#e8a200" stroke-width="2" stroke-linejoin="round"/>' +
-        '<circle cx="50" cy="18" r="2.600" fill="#e5484d"/>',
+        '<circle cx="50" cy="18" r="2.6" fill="#e5484d"/>',
         'animal'
       );
     },
     hare() {
       return svg(
         '<ellipse cx="37" cy="27" rx="9" ry="24" fill="#d3d9e0" transform="rotate(-9 37 27)"/>' +
-        '<ellipse cx="37" cy="29" rx="4.500" ry="17" fill="#f8b9c6" transform="rotate(-9 37 29)"/>' +
+        '<ellipse cx="37" cy="29" rx="4.5" ry="17" fill="#f8b9c6" transform="rotate(-9 37 29)"/>' +
         '<ellipse cx="63" cy="27" rx="9" ry="24" fill="#d3d9e0" transform="rotate(9 63 27)"/>' +
-        '<ellipse cx="63" cy="29" rx="4.500" ry="17" fill="#f8b9c6" transform="rotate(9 63 29)"/>' +
-        '<ellipse cx="50" cy="66" rx="28" ry="25" fill="#e1e6eb" stroke="#bcc4cd" stroke-width="1.500"/>' +
-        '<ellipse cx="42.500" cy="75" rx="9.500" ry="7.500" fill="#fff"/><ellipse cx="57.500" cy="75" rx="9.500" ry="7.500" fill="#fff"/>' +
+        '<ellipse cx="63" cy="29" rx="4.5" ry="17" fill="#f8b9c6" transform="rotate(9 63 29)"/>' +
+        '<ellipse cx="50" cy="66" rx="28" ry="25" fill="#e1e6eb" stroke="#bcc4cd" stroke-width="1.5"/>' +
+        '<ellipse cx="42.5" cy="75" rx="9.5" ry="7.5" fill="#fff"/><ellipse cx="57.5" cy="75" rx="9.5" ry="7.5" fill="#fff"/>' +
         eye(38, 60, 4.5) + eye(62, 60, 4.5) +
         '<path d="M46 68h8l-4 5z" fill="#f08aa0"/>' +
-        '<rect x="46.400" y="77" width="7.200" height="7.500" rx="1.600" fill="#fff" stroke="#c4cad2" stroke-width="1"/>' +
-        '<path d="M50 77v7.500" stroke="#c4cad2" stroke-width="1"/>',
+        '<rect x="46.4" y="77" width="7.2" height="7.5" rx="1.6" fill="#fff" stroke="#c4cad2" stroke-width="1"/>' +
+        '<path d="M50 77v7.5" stroke="#c4cad2" stroke-width="1"/>',
         'animal'
       );
     },
     fox() {
       return svg(
-        '<path d="M19 42L22 9l25 22z" fill="#ef8a2b"/><path d="M25 33l1.500-15L38 28z" fill="#5b3418"/>' +
-        '<path d="M81 42L78 9 53 31z" fill="#ef8a2b"/><path d="M75 33l-1.500-15L62 28z" fill="#5b3418"/>' +
+        '<path d="M19 42L22 9l25 22z" fill="#ef8a2b"/><path d="M25 33l1.5-15L38 28z" fill="#5b3418"/>' +
+        '<path d="M81 42L78 9 53 31z" fill="#ef8a2b"/><path d="M75 33l-1.5-15L62 28z" fill="#5b3418"/>' +
         '<path d="M50 93C31 87 13 63 18 44c5-17 21-20 32-20s27 3 32 20c5 19-13 43-32 49z" fill="#ef8a2b"/>' +
         '<path d="M50 93C35 88 22 73 21 58c10 1 22 8 29 20 7-12 19-19 29-20-1 15-14 30-29 35z" fill="#fff"/>' +
         eye(37, 52, 4.3) + eye(63, 52, 4.3) +
@@ -81,15 +105,15 @@
     },
     lynx() {
       return svg(
-        '<path d="M21 46L20 12l24 19z" fill="#d7a065"/><path d="M26 36l-.500-14L37 30z" fill="#f7e3c6"/><path d="M20 13L15 1l9 8z" fill="' + INK + '"/>' +
-        '<path d="M79 46l1-34-24 19z" fill="#d7a065"/><path d="M74 36l.500-14L63 30z" fill="#f7e3c6"/><path d="M80 13l5-12-9 8z" fill="' + INK + '"/>' +
+        '<path d="M21 46L20 12l24 19z" fill="#d7a065"/><path d="M26 36l-.5-14L37 30z" fill="#f7e3c6"/><path d="M20 13L15 1l9 8z" fill="' + INK + '"/>' +
+        '<path d="M79 46l1-34-24 19z" fill="#d7a065"/><path d="M74 36l.5-14L63 30z" fill="#f7e3c6"/><path d="M80 13l5-12-9 8z" fill="' + INK + '"/>' +
         '<path d="M22 58L5 66l11 5-9 11 14-1-3 10 16-9z" fill="#ecd2ac"/>' +
         '<path d="M78 58l17 8-11 5 9 11-14-1 3 10-16-9z" fill="#ecd2ac"/>' +
         '<ellipse cx="50" cy="57" rx="30" ry="27" fill="#d7a065"/>' +
         '<ellipse cx="50" cy="70" rx="15" ry="11" fill="#fff6e6"/>' +
-        '<g fill="#8a5a2e"><circle cx="39" cy="37" r="2"/><circle cx="50" cy="34" r="2"/><circle cx="61" cy="37" r="2"/><circle cx="44.500" cy="42" r="1.600"/><circle cx="55.500" cy="42" r="1.600"/></g>' +
-        '<ellipse cx="38" cy="54" rx="6" ry="5" fill="#c3da35"/><ellipse cx="38" cy="54" rx="2" ry="4.400" fill="' + INK + '"/>' +
-        '<ellipse cx="62" cy="54" rx="6" ry="5" fill="#c3da35"/><ellipse cx="62" cy="54" rx="2" ry="4.400" fill="' + INK + '"/>' +
+        '<g fill="#8a5a2e"><circle cx="39" cy="37" r="2"/><circle cx="50" cy="34" r="2"/><circle cx="61" cy="37" r="2"/><circle cx="44.5" cy="42" r="1.6"/><circle cx="55.5" cy="42" r="1.6"/></g>' +
+        '<ellipse cx="38" cy="54" rx="6" ry="5" fill="#c3da35"/><ellipse cx="38" cy="54" rx="2" ry="4.4" fill="' + INK + '"/>' +
+        '<ellipse cx="62" cy="54" rx="6" ry="5" fill="#c3da35"/><ellipse cx="62" cy="54" rx="2" ry="4.4" fill="' + INK + '"/>' +
         '<path d="M45 63h10l-5 6z" fill="#d6677d"/>' +
         '<path d="M50 69v3m0 0q-4 4-8 1m8-1q4 4 8 1" fill="none" stroke="#7a4a25" stroke-width="2" stroke-linecap="round"/>',
         'animal'
@@ -104,19 +128,33 @@
         '<ellipse cx="46" cy="60" rx="27" ry="25" fill="#e88c3c"/>' +
         '<ellipse cx="46" cy="71" rx="15" ry="11" fill="#fff3e0"/>' +
         eye(35, 56, 4.8) + eye(57, 56, 4.8) +
-        '<ellipse cx="46" cy="65" rx="3.600" ry="2.600" fill="#5a2d0c"/>' +
-        '<rect x="42.800" y="73" width="6.400" height="6.500" rx="1.400" fill="#fff" stroke="#e0cfb5" stroke-width="1"/>',
+        '<ellipse cx="46" cy="65" rx="3.6" ry="2.6" fill="#5a2d0c"/>' +
+        '<rect x="42.8" y="73" width="6.4" height="6.5" rx="1.4" fill="#fff" stroke="#e0cfb5" stroke-width="1"/>',
+        'animal'
+      );
+    },
+    panther() {
+      return svg(
+        '<circle cx="25" cy="31" r="12" fill="#2f2f3c"/><circle cx="25" cy="31" r="6" fill="#5a5a70"/>' +
+        '<circle cx="75" cy="31" r="12" fill="#2f2f3c"/><circle cx="75" cy="31" r="6" fill="#5a5a70"/>' +
+        '<ellipse cx="50" cy="57" rx="32" ry="30" fill="#2f2f3c"/>' +
+        '<ellipse cx="50" cy="71" rx="15" ry="11" fill="#4c4c5e"/>' +
+        '<ellipse cx="37" cy="52" rx="6.5" ry="5.2" fill="#ffd43b"/><ellipse cx="37" cy="52" rx="2" ry="4.4" fill="#111"/>' +
+        '<ellipse cx="63" cy="52" rx="6.5" ry="5.2" fill="#ffd43b"/><ellipse cx="63" cy="52" rx="2" ry="4.4" fill="#111"/>' +
+        '<path d="M45 63h10l-5 6z" fill="#e58aa0"/>' +
+        '<path d="M50 69v3m0 0q-4 4-8 1m8-1q4 4 8 1" fill="none" stroke="#9a9ab2" stroke-width="2" stroke-linecap="round"/>' +
+        '<path d="M30 68l-14-2m14 6l-13 4m53-8l14-2m-14 6l13 4" stroke="#8a8aa2" stroke-width="1.6" stroke-linecap="round"/>',
         'animal'
       );
     },
     carrot() {
       return svg(
         '<g transform="rotate(30 50 54)">' +
-        '<ellipse cx="38" cy="22" rx="5.500" ry="13" fill="#51b85f" transform="rotate(-32 38 22)"/>' +
-        '<ellipse cx="62" cy="22" rx="5.500" ry="13" fill="#51b85f" transform="rotate(32 62 22)"/>' +
+        '<ellipse cx="38" cy="22" rx="5.5" ry="13" fill="#51b85f" transform="rotate(-32 38 22)"/>' +
+        '<ellipse cx="62" cy="22" rx="5.5" ry="13" fill="#51b85f" transform="rotate(32 62 22)"/>' +
         '<ellipse cx="50" cy="18" rx="6" ry="14" fill="#3fa34d"/>' +
         '<path d="M50 28c11 0 18 7 16 17-3 17-9 35-16 47-7-12-13-30-16-47-2-10 5-17 16-17z" fill="#f58a1f"/>' +
-        '<path d="M41 46h9M51 58h9M43 69h7" fill="none" stroke="#d96f0e" stroke-width="2.600" stroke-linecap="round"/>' +
+        '<path d="M41 46h9M51 58h9M43 69h7" fill="none" stroke="#d96f0e" stroke-width="2.6" stroke-linecap="round"/>' +
         '</g>'
       );
     },
@@ -130,7 +168,7 @@
     },
     nut() {
       return svg(
-        '<rect x="46.500" y="8" width="7" height="14" rx="3.500" fill="#6b4420"/>' +
+        '<rect x="46.5" y="8" width="7" height="14" rx="3.5" fill="#6b4420"/>' +
         '<path d="M24 46c0-17 12-27 26-27s26 10 26 27z" fill="#8a5a2b"/>' +
         '<path d="M28 46h44c0 25-10 41-22 46-12-5-22-21-22-46z" fill="#e0a85f"/>' +
         '<path d="M38 54c0 12 3 20 7 26" fill="none" stroke="#f3cf9a" stroke-width="4" stroke-linecap="round"/>'
@@ -144,8 +182,73 @@
         '<rect x="42" y="60" width="16" height="28" rx="3" fill="#7a4a22"/>',
         'den-house'
       );
+    },
+    brain() {
+      return svg(
+        '<path d="M48 18c-5-5-15-5-19 1-7 0-13 6-12 13-6 4-7 12-3 17-3 7 1 15 8 17 1 7 9 12 16 9 4 3 8 3 10 0z" fill="#f7a8c4"/>' +
+        '<path d="M52 18c5-5 15-5 19 1 7 0 13 6 12 13 6 4 7 12 3 17 3 7-1 15-8 17-1 7-9 12-16 9-4 3-8 3-10 0z" fill="#f48fb1"/>' +
+        '<path d="M50 20v62M28 34c6 0 9 4 9 9M25 55c6-2 11 2 11 7M72 34c-6 0-9 4-9 9M75 55c-6-2-11 2-11 7" fill="none" stroke="#c2185b" stroke-width="3" stroke-linecap="round"/>'
+      );
+    },
+    board() {
+      let cells = '';
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+          cells += '<rect x="' + (17 + c * 22) + '" y="' + (17 + r * 22) + '" width="22" height="22" fill="' + ((r + c) % 2 ? '#ffe2b8' : '#93d36b') + '"/>';
+        }
+      }
+      return svg(
+        '<rect x="10" y="10" width="80" height="80" rx="10" fill="#a9713d"/>' + cells +
+        '<path d="M28 72L72 28" stroke="#2f7df6" stroke-width="5" stroke-linecap="round" stroke-dasharray="1 9"/>' +
+        '<path d="M28 28v44" stroke="#e5484d" stroke-width="5" stroke-linecap="round" stroke-dasharray="1 9"/>'
+      );
+    },
+    target() {
+      return svg(
+        '<circle cx="46" cy="54" r="34" fill="#e5484d"/><circle cx="46" cy="54" r="24" fill="#fff"/>' +
+        '<circle cx="46" cy="54" r="14" fill="#e5484d"/><circle cx="46" cy="54" r="5" fill="#fff"/>' +
+        '<path d="M47 53L82 18" stroke="#3a2a18" stroke-width="5" stroke-linecap="round"/>' +
+        '<path d="M80 8l2 12 12 2-8 8-12-2-2-12z" fill="#ffc93c" stroke="#e8a200" stroke-width="2" stroke-linejoin="round"/>'
+      );
+    },
+    info() {
+      return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/>' +
+        '<circle cx="12" cy="7.4" r="1.5" fill="currentColor"/><path d="M12 11v6.2" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>';
     }
   };
+
+  /* Chess pieces for the cheat sheet. */
+  const PIECE_INK = 'fill="#3a2a18" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"';
+  const BASE = '<rect x="22" y="78" width="56" height="13" rx="4" ' + PIECE_INK + '/>';
+  const PIECE = {
+    king() {
+      return svg('<path d="M46 4h8v8h8v8h-8v8h-8v-8h-8v-8h8z" ' + PIECE_INK + '/>' +
+        '<path d="M28 38c0-9 44-9 44 0l-9 40H37z" ' + PIECE_INK + '/>' + BASE);
+    },
+    pawn() {
+      return svg('<circle cx="50" cy="30" r="14" ' + PIECE_INK + '/>' +
+        '<path d="M37 46h26l-5 8 7 24H35l7-24z" ' + PIECE_INK + '/>' + BASE);
+    },
+    knight() {
+      return svg('<path d="M32 78c0-16 9-22 15-30-7 3-14 4-18 0-4-5 1-11 8-17l10-9 2-10 7 9c15 5 23 20 21 38l-3 19z" ' + PIECE_INK + '/>' +
+        '<circle cx="50" cy="28" r="3" fill="#fff"/>' + BASE);
+    },
+    bishop() {
+      return svg('<circle cx="50" cy="11" r="6" ' + PIECE_INK + '/>' +
+        '<path d="M50 18c13 10 19 21 15 33-2 7-7 11-15 11s-13-4-15-11c-4-12 2-23 15-33z" ' + PIECE_INK + '/>' +
+        '<path d="M53 30l-7 12" stroke="#fff" stroke-width="3" stroke-linecap="round"/>' +
+        '<path d="M39 62h22l5 16H34z" ' + PIECE_INK + '/>' + BASE);
+    },
+    rook() {
+      return svg('<path d="M26 12h11v9h7v-9h12v9h7v-9h11v22l-9 7v37H35V41l-9-7z" ' + PIECE_INK + '/>' + BASE);
+    },
+    queen() {
+      return svg('<circle cx="16" cy="22" r="6" ' + PIECE_INK + '/><circle cx="33" cy="13" r="6" ' + PIECE_INK + '/>' +
+        '<circle cx="50" cy="9" r="6" ' + PIECE_INK + '/><circle cx="67" cy="13" r="6" ' + PIECE_INK + '/><circle cx="84" cy="22" r="6" ' + PIECE_INK + '/>' +
+        '<path d="M17 29l13 22 3-31 11 29 6-31 6 31 11-29 3 31 13-22-9 49H26z" ' + PIECE_INK + '/>' + BASE);
+    }
+  };
+  const SHEET = [['lion', 'king'], ['hare', 'pawn'], ['squirrel', 'knight'], ['fox', 'bishop'], ['lynx', 'rook'], ['panther', 'queen']];
 
   const BOW = '<svg class="bow" viewBox="0 0 44 22" aria-hidden="true" focusable="false">' +
     '<path d="M22 11L3 2v18zM22 11l19-9v18z" fill="currentColor" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>' +
@@ -165,61 +268,20 @@
   function soundIcon(on) {
     return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/>' +
       (on
-        ? '<path d="M16 8.500a5 5 0 010 7M18.500 6a8.500 8.500 0 010 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'
-        : '<path d="M16.500 9.500l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>') +
+        ? '<path d="M16 8.5a5 5 0 010 7M18.5 6a8.5 8.5 0 010 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'
+        : '<path d="M16.5 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>') +
       '</svg>';
   }
 
-  /* ------------------------------------------------------------------ */
-  /* Words                                                               */
-  /* ------------------------------------------------------------------ */
-
-  const TEAM = {
-    red: { gen: 'красных', won: 'Победили красные!' },
-    blue: { gen: 'синих', won: 'Победили синие!' }
-  };
-  const ANIMAL = {
-    hare: { nom: 'Зайчик', acc: 'Зайчика', fem: false },
-    fox: { nom: 'Лисичка', acc: 'Лисичку', fem: true },
-    lion: { nom: 'Лев', acc: 'Льва', fem: false },
-    lynx: { nom: 'Рысь', acc: 'Рысь', fem: true },
-    squirrel: { nom: 'Белочка', acc: 'Белочку', fem: true }
-  };
-  const STAR_WORDS = ['', '1 звёздочка', '2 звёздочки', '3 звёздочки'];
-  const STEP_WORDS = ['', '1 шаг', '2 шага', '3 шага'];
   const COLS = 'abcde';
-
-  function label(p) {
-    const fem = ANIMAL[p.kind].fem;
-    const colour = p.team === 'red' ? (fem ? 'Красная' : 'Красный') : (fem ? 'Синяя' : 'Синий');
-    return colour + ' ' + ANIMAL[p.kind].nom;
-  }
-  function rolledText(n) { return (n === 1 ? 'Выпала ' : 'Выпало ') + STAR_WORDS[n]; }
-  function leftText(n) { return (n === 1 ? 'Остался ' : 'Осталось ') + STEP_WORDS[n] + '.'; }
-  function catchText(ev) {
-    const h = ANIMAL[ev.piece.kind];
-    const t = ANIMAL[ev.captured.kind];
-    if (ev.captured.kind === 'lion') return h.nom + (h.fem ? ' поймала' : ' поймал') + ' Льва!';
-    return h.nom + (h.fem ? ' поймала ' : ' поймал ') + t.acc + '! ' + t.nom + (t.fem ? ' ушла' : ' ушёл') + ' отдыхать в домик.';
-  }
-  function noBonusText(out) {
-    if (out.kind === 'hare') {
-      return out.reason === 'caught'
-        ? 'Морковка! Но Зайчик уже отдыхает в домике. Ход пропускается.'
-        : 'Морковка! Но Зайчику до неё не добраться. Ход пропускается.';
-    }
-    return out.reason === 'caught'
-      ? 'Дерево! Но Белочка уже отдыхает в домике. Ход пропускается.'
-      : 'Дерево! Но оба дерева заняты. Ход пропускается.';
-  }
+  function label(p) { return t('label', p.team, p.kind); }
 
   /* ------------------------------------------------------------------ */
   /* Sound (tiny synth, no files)                                        */
   /* ------------------------------------------------------------------ */
 
-  let soundOn = true;
+  let soundOn = load('forest-sound') !== 'off';
   let actx = null;
-  try { soundOn = localStorage.getItem('forest-sound') !== 'off'; } catch (e) { /* storage may be blocked */ }
 
   function audio() {
     if (!soundOn) return null;
@@ -253,16 +315,16 @@
     const a = audio();
     if (!a) return;
     try {
-      const t = a.currentTime + 0.01;
+      const t0 = a.currentTime + 0.01;
       switch (name) {
-        case 'tap': tone(a, 620, t, 0.07, 'sine', 0.08); break;
-        case 'roll': for (let i = 0; i < 9; i++) tone(a, 240 + Math.random() * 380, t + i * 0.09, 0.05, 'square', 0.035); break;
-        case 'step': tone(a, 420, t, 0.12, 'sine', 0.14, 640); break;
-        case 'hop': tone(a, 500, t, 0.1, 'sine', 0.14, 900); tone(a, 700, t + 0.13, 0.12, 'sine', 0.12, 1100); break;
-        case 'catch': tone(a, 660, t, 0.12, 'triangle', 0.16, 330); tone(a, 330, t + 0.13, 0.2, 'triangle', 0.14, 200); break;
-        case 'bonus': [660, 880, 1100, 1320].forEach((f, i) => tone(a, f, t + i * 0.09, 0.14, 'sine', 0.12)); break;
-        case 'rest': tone(a, 300, t, 0.3, 'sine', 0.12, 170); break;
-        case 'win': [523, 659, 784, 1047, 784, 1047].forEach((f, i) => tone(a, f, t + i * 0.14, 0.22, 'triangle', 0.16)); break;
+        case 'tap': tone(a, 620, t0, 0.07, 'sine', 0.08); break;
+        case 'roll': for (let i = 0; i < 9; i++) tone(a, 240 + Math.random() * 380, t0 + i * 0.09, 0.05, 'square', 0.035); break;
+        case 'step': tone(a, 420, t0, 0.12, 'sine', 0.14, 640); break;
+        case 'hop': tone(a, 500, t0, 0.1, 'sine', 0.14, 900); tone(a, 700, t0 + 0.13, 0.12, 'sine', 0.12, 1100); break;
+        case 'catch': tone(a, 660, t0, 0.12, 'triangle', 0.16, 330); tone(a, 330, t0 + 0.13, 0.2, 'triangle', 0.14, 200); break;
+        case 'bonus': [660, 880, 1100, 1320].forEach((f, i) => tone(a, f, t0 + i * 0.09, 0.14, 'sine', 0.12)); break;
+        case 'rest': tone(a, 300, t0, 0.3, 'sine', 0.12, 170); break;
+        case 'win': [523, 659, 784, 1047, 784, 1047].forEach((f, i) => tone(a, f, t0 + i * 0.14, 0.22, 'triangle', 0.16)); break;
       }
     } catch (e) { /* sound is optional */ }
   }
@@ -272,6 +334,7 @@
   /* ------------------------------------------------------------------ */
 
   const el = {
+    intro: byId('intro'), introScroll: byId('introScroll'), sheet: byId('sheet'), skip: byId('skipIntro'),
     menu: byId('menu'), game: byId('game'), board: byId('board'), pieces: byId('pieces'),
     die: byId('die'), dieFace: byId('dieFace'), message: byId('message'), steps: byId('steps'), done: byId('btnDone'),
     teamRed: byId('teamRed'), teamBlue: byId('teamBlue'), denRed: byId('denRed'), denBlue: byId('denBlue'),
@@ -289,11 +352,17 @@
   let session = 0; // changes on every new game or exit, so stale timers stop
   let busy = false; // an animation or the computer is playing: taps are ignored
   let selectedId = null;
+  let lastMsg = null; // [key, args] so the message can be re-said in another language
+  let introReturn = 'menu'; // where "Go to the game" leads: 'menu' | 'game'
   const cellEls = [];
   let pieceEls = {};
 
   const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-  function say(text) { el.message.textContent = text; }
+  function say(key) {
+    const args = Array.prototype.slice.call(arguments, 1);
+    lastMsg = [key, args];
+    el.message.textContent = t.apply(null, [key].concat(args));
+  }
   function isCpuTurn() { return mode === 'cpu' && state.phase !== 'over' && state.turn === CPU_TEAM; }
   function isHumanTurn() { return state.phase !== 'over' && !(mode === 'cpu' && state.turn === CPU_TEAM); }
   function cellEl(x, y) { return cellEls[y * F.SIZE + x]; }
@@ -307,12 +376,24 @@
         b.className = 'cell ' + type + ((x + y) % 2 ? ' alt' : '');
         b.dataset.x = x;
         b.dataset.y = y;
-        b.setAttribute('aria-label', 'Клетка ' + COLS[x] + (y + 1) + (type === 'carrot' ? ', морковка' : type === 'tree' ? ', дерево' : ''));
         if (type !== 'grass') b.innerHTML = ART[type]();
         cellEls[y * F.SIZE + x] = b;
         el.board.insertBefore(b, el.pieces);
       }
     }
+  }
+
+  function buildSheet() {
+    el.sheet.innerHTML = SHEET.map((pair) =>
+      '<li role="img" aria-label="' + t('sheetItem', pair[0], pair[1]) + '">' +
+      '<span class="s-animal">' + ART[pair[0]]() + '</span>' +
+      '<span class="s-eq" aria-hidden="true">=</span>' +
+      '<span class="s-piece">' + PIECE[pair[1]]() + '</span></li>'
+    ).join('');
+    // The same pairs as a small list inside the first point of the landing page.
+    byId('pairs').innerHTML = SHEET.map((pair) =>
+      '<li><span class="pair-ico" aria-hidden="true">' + ART[pair[0]]() + '</span><span>' + t('pair', pair[0], pair[1]) + '</span></li>'
+    ).join('');
   }
 
   function makePiece(p) {
@@ -332,9 +413,51 @@
     const mini = document.createElement('span');
     mini.className = 'mini ' + p.team;
     mini.setAttribute('role', 'img');
+    mini.dataset.team = p.team;
+    mini.dataset.kind = p.kind;
     mini.setAttribute('aria-label', label(p));
     mini.innerHTML = ART[p.kind]();
     node.appendChild(mini);
+  }
+
+  function renderWho() {
+    el.whoRed.textContent = mode === 'cpu' ? t('who.you') : '';
+    el.whoBlue.textContent = mode === 'cpu' ? t('who.cpu') : '';
+  }
+
+  /* Put every text on the page into the current language. */
+  function applyLang() {
+    document.documentElement.lang = lang;
+    document.title = t('doc.title');
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta) meta.setAttribute('content', t('meta.desc'));
+    document.querySelectorAll('[data-t]').forEach((n) => { n.textContent = t(n.dataset.t); });
+    document.querySelectorAll('[data-t-html]').forEach((n) => { n.innerHTML = t(n.dataset.tHtml); });
+    document.querySelectorAll('[data-t-aria]').forEach((n) => { n.setAttribute('aria-label', t(n.dataset.tAria)); });
+    // Justified landing texts get break points inside long words, so lines don't get wide gaps.
+    if (window.ForestHyphen) document.querySelectorAll('.intro-lead, .dev p, .maps').forEach((n) => window.ForestHyphen.apply(n, lang));
+    document.querySelectorAll('.lang button').forEach((b) => { b.setAttribute('aria-pressed', b.dataset.lang === lang ? 'true' : 'false'); });
+    buildSheet();
+    for (const c of cellEls) {
+      const x = Number(c.dataset.x);
+      const y = Number(c.dataset.y);
+      c.setAttribute('aria-label', t('cell', COLS[x] + (y + 1), F.cellType(x, y)));
+    }
+    if (state) {
+      for (const p of state.pieces) if (pieceEls[p.id]) pieceEls[p.id].setAttribute('aria-label', label(p));
+    }
+    document.querySelectorAll('.mini').forEach((m) => { m.setAttribute('aria-label', t('label', m.dataset.team, m.dataset.kind)); });
+    renderWho();
+    setSound(soundOn);
+    if (lastMsg) say.apply(null, [lastMsg[0]].concat(lastMsg[1]));
+    if (!el.win.hidden) renderWin();
+  }
+
+  function setLang(code) {
+    if (I18N.codes.indexOf(code) < 0 || code === lang) return;
+    lang = code;
+    save('forest-lang', code);
+    applyLang();
   }
 
   /* Bring the whole screen in line with the game state. */
@@ -369,7 +492,7 @@
     }
     if (!busy && human && state.phase === 'choose') {
       pieceEls[state.choices.pieceId].classList.add('selected');
-      for (const t of state.choices.targets) cellEl(t.x, t.y).classList.add('target');
+      for (const tg of state.choices.targets) cellEl(tg.x, tg.y).classList.add('target');
     }
 
     el.teamRed.classList.toggle('active', state.phase !== 'over' && state.turn === 'red');
@@ -392,9 +515,9 @@
   }
 
   function announceTurn() {
-    if (isCpuTurn()) say('Ходит компьютер…');
-    else if (mode === 'cpu') say('Твой ход. Брось кубик!');
-    else say('Ход ' + TEAM[state.turn].gen + '. Брось кубик!');
+    if (isCpuTurn()) say('turnCpu');
+    else if (mode === 'cpu') say('turnYou');
+    else say('turnTeam', state.turn);
   }
 
   /* If only one animal can move, pick it for the player. */
@@ -439,19 +562,19 @@
 
     if (out.type === 'rest') {
       sfx('rest');
-      say('Ой, звери решили отдохнуть! Ход пропускается.');
+      say('rest');
       await pause(1900);
       return passTurn(my);
     }
     if (out.type === 'bonus-none') {
       sfx('rest');
-      say(noBonusText(out));
+      say('noBonus', out.kind, out.reason);
       await pause(2300);
       return passTurn(my);
     }
     if (out.type === 'no-moves') {
       sfx('rest');
-      say(rolledText(out.steps) + ', но ходить некуда. Ход пропускается.');
+      say('noMoves', out.steps);
       await pause(2300);
       return passTurn(my);
     }
@@ -460,22 +583,20 @@
       if (isCpuTurn()) {
         await pause(700);
         if (my !== session) return;
-        const t = F.aiChooseBonus(state, level);
-        return playBonus(F.applyBonus(state, t.x, t.y), my);
+        const tg = F.aiChooseBonus(state, level);
+        return playBonus(F.applyBonus(state, tg.x, tg.y), my);
       }
-      say(out.kind === 'hare'
-        ? 'Морковка! Выбери, к какой морковке прыгнет Зайчик.'
-        : 'Дерево! Выбери, на какое дерево прыгнет Белочка.');
+      say(out.kind === 'hare' ? 'chooseCarrot' : 'chooseTree');
       busy = false;
       refresh();
       return;
     }
     // Stars: the team walks.
     if (isCpuTurn()) {
-      say(rolledText(out.steps) + '. Компьютер ходит…');
+      say('rolledCpu', out.steps);
       return cpuMoves(my);
     }
-    say(rolledText(out.steps) + '. Выбери зверя и сделай ' + STEP_WORDS[out.steps] + '.');
+    say('rolledYou', out.steps);
     busy = false;
     autoSelect();
     refresh();
@@ -486,9 +607,7 @@
     busy = true;
     node.classList.add('hop', 'moving');
     sfx('bonus');
-    say(out.kind === 'hare'
-      ? 'Морковка! Зайчик кушает, и его нельзя поймать.'
-      : 'Дерево! Белочка грызёт орешек, и её не достать.');
+    say(out.kind === 'hare' ? 'bonusHare' : 'bonusSquirrel');
     refresh();
     await pause(450);
     node.classList.remove('hop', 'moving');
@@ -509,8 +628,8 @@
     node.classList.add('moving');
     if (ev.piece.kind === 'squirrel') { node.classList.add('hop'); sfx('hop'); }
     else sfx('step');
-    if (ev.captured) say(catchText(ev));
-    else if (ev.win === 'hare') say('Зайчик добежал до края леса!');
+    if (ev.captured) say('catch', ev.piece.kind, ev.captured.kind);
+    else if (ev.win === 'hare') say('hareHome');
     refresh();
     await pause(ev.captured ? 240 : 380);
     if (my !== session) return true;
@@ -531,7 +650,7 @@
     }
     if (ev.turnOver) {
       if (ev.reason === 'capture') await pause(1700);
-      else if (ev.reason === 'stuck') { say('Больше ходить некуда.'); await pause(1300); }
+      else if (ev.reason === 'stuck') { say('stuck'); await pause(1300); }
       else await pause(450);
       await passTurn(my);
       return true;
@@ -584,7 +703,7 @@
     busy = false;
     selectedId = F.stepMoves(state, F.getPiece(state, id)).length ? id : null;
     autoSelect();
-    say(leftText(state.stepsLeft));
+    say('left', state.stepsLeft);
     refresh();
   }
 
@@ -601,7 +720,7 @@
 
   function onTap(x, y) {
     if (state.phase === 'choose') {
-      if (state.choices.targets.some((t) => t.x === x && t.y === y)) chooseBonus(x, y);
+      if (state.choices.targets.some((tg) => tg.x === x && tg.y === y)) chooseBonus(x, y);
       return;
     }
     if (state.phase !== 'move') return;
@@ -626,7 +745,7 @@
   }
 
   /* ------------------------------------------------------------------ */
-  /* Game start, end, dialogs                                            */
+  /* Screens: landing page, menu, game; dialogs                          */
   /* ------------------------------------------------------------------ */
 
   let lastFocus = null;
@@ -640,6 +759,21 @@
     node.hidden = true;
     if (lastFocus && document.contains(lastFocus)) lastFocus.focus({ preventScroll: true });
     lastFocus = null;
+  }
+
+  function showIntro(from) {
+    introReturn = from;
+    el.skip.checked = load('forest-skip-intro') === '1';
+    el.menu.hidden = true;
+    el.game.hidden = true;
+    el.intro.hidden = false;
+    el.introScroll.scrollTop = 0;
+  }
+  function leaveIntro() {
+    audio(); // unlock sound while we are inside a tap
+    el.intro.hidden = true;
+    if (introReturn === 'game' && state) el.game.hidden = false;
+    else el.menu.hidden = false;
   }
 
   function startGame(newMode) {
@@ -662,13 +796,13 @@
     }
     el.denRed.innerHTML = ART.house();
     el.denBlue.innerHTML = ART.house();
-    el.whoRed.textContent = mode === 'cpu' ? '(ты)' : '';
-    el.whoBlue.textContent = mode === 'cpu' ? '(компьютер)' : '';
+    renderWho();
     el.die.classList.remove('rolling', 'landed');
     setDie('star3');
 
     el.win.hidden = true;
     el.quit.hidden = true;
+    el.intro.hidden = true;
     el.menu.hidden = true;
     el.game.hidden = false;
     announceTurn();
@@ -679,27 +813,28 @@
   function toMenu() {
     session++;
     busy = false;
+    state = null;
+    lastMsg = null;
     el.win.hidden = true;
     el.quit.hidden = true;
     el.game.hidden = true;
     el.menu.hidden = false;
   }
 
-  function showWin() {
+  function renderWin() {
     const w = state.winner;
     const lion = state.winReason === 'lion';
+    el.winArt.innerHTML = lion ? ART.lion() : ART.hare();
+    el.winTitle.textContent = t(lion ? 'winLionTitle' : 'winHareTitle');
+    el.winText.textContent = t(lion ? 'winLionText' : 'winHareText');
+    el.winWho.textContent = mode === 'cpu' ? t(w === CPU_TEAM ? 'winCpu' : 'winYou') : t('winTeam', w);
+    el.winWho.className = 'win-who ' + w;
+  }
+
+  function showWin() {
     busy = true;
     refresh();
-    el.winArt.innerHTML = lion ? ART.lion() : ART.hare();
-    el.winTitle.textContent = lion ? 'Лев пойман!' : 'Заячий триумф!';
-    el.winText.textContent = lion
-      ? 'Царские обнимашки! Все звери обнимаются.'
-      : 'Зайчик пробежал весь лес и спасся!';
-    let who = TEAM[w].won;
-    if (mode === 'cpu') who = w === CPU_TEAM ? 'Победил компьютер. В следующий раз получится!' : 'Ты победил!';
-    el.winWho.textContent = who;
-    el.winWho.className = 'win-who ' + w;
-
+    renderWin();
     const colours = ['#e5484d', '#2f7df6', '#ffc93c', '#37b24d', '#ff922b', '#b267e6'];
     let bits = '';
     for (let i = 0; i < 36; i++) {
@@ -715,8 +850,7 @@
     soundOn = on;
     el.sound.innerHTML = soundIcon(on);
     el.sound.setAttribute('aria-pressed', on ? 'true' : 'false');
-    el.sound.setAttribute('aria-label', on ? 'Звук включён' : 'Звук выключен');
-    try { localStorage.setItem('forest-sound', on ? 'on' : 'off'); } catch (e) { /* storage may be blocked */ }
+    el.sound.setAttribute('aria-label', t(on ? 'sound.on' : 'sound.off'));
   }
 
   /* ------------------------------------------------------------------ */
@@ -725,7 +859,13 @@
 
   document.querySelectorAll('[data-art]').forEach((node) => { node.innerHTML = ART[node.dataset.art](); });
   buildBoard();
-  setSound(soundOn);
+  applyLang();
+
+  document.querySelectorAll('.lang button').forEach((b) => b.addEventListener('click', () => setLang(b.dataset.lang)));
+  byId('btnGo').addEventListener('click', leaveIntro);
+  el.skip.addEventListener('change', () => save('forest-skip-intro', el.skip.checked ? '1' : null));
+  byId('btnAboutMenu').addEventListener('click', () => showIntro('menu'));
+  byId('btnAbout').addEventListener('click', () => showIntro('game'));
 
   byId('btnTwo').addEventListener('click', () => startGame('two'));
   byId('btnCpu').addEventListener('click', () => startGame('cpu'));
@@ -744,7 +884,11 @@
   byId('btnQuitYes').addEventListener('click', toMenu);
   byId('btnAgain').addEventListener('click', () => startGame(mode));
   byId('btnWinMenu').addEventListener('click', toMenu);
-  el.sound.addEventListener('click', () => { setSound(!soundOn); sfx('tap'); });
+  el.sound.addEventListener('click', () => {
+    setSound(!soundOn);
+    save('forest-sound', soundOn ? 'on' : 'off');
+    sfx('tap');
+  });
 
   [el.rules, el.quit].forEach((modal) => {
     modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(modal); });
@@ -766,8 +910,12 @@
     passTurn(session);
   });
   el.board.addEventListener('click', (e) => {
-    const t = e.target.closest('[data-x]');
-    if (!t || !state || busy || !isHumanTurn()) return;
-    onTap(Number(t.dataset.x), Number(t.dataset.y));
+    const tg = e.target.closest('[data-x]');
+    if (!tg || !state || busy || !isHumanTurn()) return;
+    onTap(Number(tg.dataset.x), Number(tg.dataset.y));
   });
+
+  // First screen: the landing page, unless the parent asked not to show it again.
+  if (load('forest-skip-intro') === '1') el.menu.hidden = false;
+  else showIntro('menu');
 })();
