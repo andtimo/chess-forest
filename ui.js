@@ -325,6 +325,33 @@
         case 'bonus': [660, 880, 1100, 1320].forEach((f, i) => tone(a, f, t0 + i * 0.09, 0.14, 'sine', 0.12)); break;
         case 'rest': tone(a, 300, t0, 0.3, 'sine', 0.12, 170); break;
         case 'win': [523, 659, 784, 1047, 784, 1047].forEach((f, i) => tone(a, f, t0 + i * 0.14, 0.22, 'triangle', 0.16)); break;
+        // Turn timer: a quiet clock in the last seconds, and a soft gust of wind when time is up.
+        case 'tick': tone(a, 1250, t0, 0.035, 'triangle', 0.05); break;
+        case 'tock': tone(a, 950, t0, 0.035, 'triangle', 0.05); break;
+        case 'whoosh': {
+          const len = 0.75;
+          const buf = a.createBuffer(1, Math.floor(a.sampleRate * len), a.sampleRate);
+          const data = buf.getChannelData(0);
+          for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+          const src = a.createBufferSource();
+          src.buffer = buf;
+          const f = a.createBiquadFilter();
+          f.type = 'bandpass';
+          f.Q.value = 1.1;
+          f.frequency.setValueAtTime(320, t0);
+          f.frequency.exponentialRampToValueAtTime(1700, t0 + 0.32);
+          f.frequency.exponentialRampToValueAtTime(380, t0 + len);
+          const g = a.createGain();
+          g.gain.setValueAtTime(0.0001, t0);
+          g.gain.exponentialRampToValueAtTime(0.2, t0 + 0.28);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + len);
+          src.connect(f);
+          f.connect(g);
+          g.connect(a.destination);
+          src.start(t0);
+          src.stop(t0 + len + 0.05);
+          break;
+        }
       }
     } catch (e) { /* sound is optional */ }
   }
@@ -334,11 +361,12 @@
   /* ------------------------------------------------------------------ */
 
   const el = {
-    intro: byId('intro'), introScroll: byId('introScroll'), sheet: byId('sheet'), skip: byId('skipIntro'),
+    intro: byId('intro'), introScroll: byId('introScroll'), sheet: byId('sheet'), hint: byId('sheetHint'), skip: byId('skipIntro'),
     menu: byId('menu'), game: byId('game'), board: byId('board'), pieces: byId('pieces'),
     die: byId('die'), dieFace: byId('dieFace'), message: byId('message'), steps: byId('steps'), done: byId('btnDone'),
     teamRed: byId('teamRed'), teamBlue: byId('teamBlue'), denRed: byId('denRed'), denBlue: byId('denBlue'),
     whoRed: byId('whoRed'), whoBlue: byId('whoBlue'), sound: byId('btnSound'),
+    clockRed: byId('clockRed'), clockBlue: byId('clockBlue'), timerNote: byId('timerNote'),
     rules: byId('rules'), quit: byId('quit'), win: byId('win'),
     winArt: byId('winArt'), winTitle: byId('winTitle'), winText: byId('winText'), winWho: byId('winWho'),
     confetti: byId('confetti'), again: byId('btnAgain')
@@ -354,6 +382,8 @@
   let selectedId = null;
   let lastMsg = null; // [key, args] so the message can be re-said in another language
   let introReturn = 'menu'; // where "Go to the game" leads: 'menu' | 'game'
+  // Turn timer: 0 = off, otherwise seconds per turn (chosen in the menu, remembered on this device).
+  let timerSec = [0, 30, 15].indexOf(Number(load('forest-timer'))) >= 0 ? Number(load('forest-timer')) : 0;
   const cellEls = [];
   let pieceEls = {};
 
@@ -384,16 +414,45 @@
   }
 
   function buildSheet() {
-    el.sheet.innerHTML = SHEET.map((pair) =>
-      '<li role="img" aria-label="' + t('sheetItem', pair[0], pair[1]) + '">' +
+    hideHint();
+    el.sheet.innerHTML = SHEET.map((pair, i) =>
+      '<li><button type="button" class="s-pair" data-i="' + i + '" aria-label="' + t('sheetItem', pair[0], pair[1]) + '"' +
+      ' aria-controls="sheetHint" aria-expanded="false">' +
       '<span class="s-animal">' + ART[pair[0]]() + '</span>' +
       '<span class="s-eq" aria-hidden="true">=</span>' +
-      '<span class="s-piece">' + PIECE[pair[1]]() + '</span></li>'
+      '<span class="s-piece">' + PIECE[pair[1]]() + '</span></button></li>'
     ).join('');
     // The same pairs as a small list inside the first point of the landing page.
     byId('pairs').innerHTML = SHEET.map((pair) =>
       '<li><span class="pair-ico" aria-hidden="true">' + ART[pair[0]]() + '</span><span>' + t('pair', pair[0], pair[1]) + '</span></li>'
     ).join('');
+  }
+
+  /* Tap a pair on the cheat sheet: a bubble under the row says how that animal moves. */
+  let hintAt = -1; // index of the pair whose hint is open, -1 = closed
+  function showHint(i) {
+    const pair = SHEET[i];
+    hintAt = i;
+    el.hint.hidden = false;
+    el.hint.innerHTML = '<b>' + t('sheetItem', pair[0], pair[1]) + '</b><span>' + t('sheetHint', pair[0]) + '</span>';
+    el.sheet.querySelectorAll('.s-pair').forEach((b) => { b.setAttribute('aria-expanded', Number(b.dataset.i) === i ? 'true' : 'false'); });
+    placeHintArrow();
+  }
+  function hideHint() {
+    if (hintAt < 0) return;
+    hintAt = -1;
+    el.hint.hidden = true;
+    el.hint.textContent = '';
+    el.sheet.querySelectorAll('.s-pair').forEach((b) => { b.setAttribute('aria-expanded', 'false'); });
+  }
+  // The bubble's little arrow points at the middle of the tapped pair.
+  function placeHintArrow() {
+    if (hintAt < 0) return;
+    const btn = el.sheet.querySelector('.s-pair[data-i="' + hintAt + '"]');
+    if (!btn) return;
+    const b = btn.getBoundingClientRect();
+    const h = el.hint.getBoundingClientRect();
+    el.hint.style.setProperty('--arrow', (b.left + b.width / 2 - h.left) + 'px');
   }
 
   function makePiece(p) {
@@ -449,6 +508,7 @@
     document.querySelectorAll('.mini').forEach((m) => { m.setAttribute('aria-label', t('label', m.dataset.team, m.dataset.kind)); });
     renderWho();
     setSound(soundOn);
+    if (state) renderClock();
     if (lastMsg) say.apply(null, [lastMsg[0]].concat(lastMsg[1]));
     if (!el.win.hidden) renderWin();
   }
@@ -512,6 +572,7 @@
     el.steps.innerHTML = stars;
     el.done.hidden = !(state.phase === 'move' && human);
     el.done.disabled = busy;
+    renderClock();
   }
 
   function announceTurn() {
@@ -525,6 +586,84 @@
     const ids = new Set(F.allMoves(state, state.turn).map((m) => m.piece.id));
     if (selectedId && !ids.has(selectedId)) selectedId = null;
     if (!selectedId && ids.size === 1) selectedId = ids.values().next().value;
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Turn timer                                                          */
+  /* ------------------------------------------------------------------ */
+  // A person's whole turn (roll, steps, choosing a carrot / tree) has timerSec seconds.
+  // The clock waits while the die spins or animals move, while a dialog or the landing page is open,
+  // and while the browser is in the background. The computer's turns are not timed.
+
+  const clock = { left: 0, last: 0, shown: -1 };
+  let clockLoop = null;
+  const CLOCK_SVG = '<svg viewBox="0 0 36 36" aria-hidden="true"><circle class="clock-track" cx="18" cy="18" r="15"/>' +
+    '<circle class="clock-bar" cx="18" cy="18" r="15" pathLength="100"/></svg><span class="clock-num" aria-hidden="true"></span>';
+
+  function resetClock() {
+    clock.left = timerSec * 1000;
+    clock.last = performance.now();
+    clock.shown = -1;
+    renderClock();
+  }
+  function clockRuns() {
+    return !!state && timerSec > 0 && !busy && isHumanTurn() &&
+      (state.phase === 'roll' || state.phase === 'move' || state.phase === 'choose') &&
+      !el.game.hidden && el.rules.hidden && el.quit.hidden && el.win.hidden && !document.hidden;
+  }
+  function clockTick() {
+    const now = performance.now();
+    const dt = Math.min(now - clock.last, 250); // a long gap means the page was asleep: don't count it
+    clock.last = now;
+    if (!clockRuns()) return;
+    clock.left = Math.max(0, clock.left - dt);
+    const sec = Math.ceil(clock.left / 1000);
+    if (sec !== clock.shown && sec >= 1 && sec <= 5) sfx(sec % 2 ? 'tick' : 'tock');
+    renderClock();
+    if (clock.left <= 0) timeUp(session);
+  }
+  function startClockLoop() { if (!clockLoop) clockLoop = setInterval(clockTick, 100); }
+  function stopClockLoop() { clearInterval(clockLoop); clockLoop = null; }
+
+  /* The ring sits on the panel of the team to move: green, yellow from 10 s, red from 5 s. */
+  function renderClock() {
+    const on = !!state && timerSec > 0 && state.phase !== 'over' && isHumanTurn();
+    const sec = Math.ceil(clock.left / 1000);
+    [['red', el.clockRed, el.teamRed], ['blue', el.clockBlue, el.teamBlue]].forEach((row) => {
+      const node = row[1];
+      const show = on && state.turn === row[0];
+      node.hidden = !show;
+      row[2].classList.toggle('timed', show);
+      if (!show) return;
+      const frac = timerSec ? clock.left / (timerSec * 1000) : 0;
+      node.querySelector('.clock-bar').style.strokeDashoffset = String(100 * (1 - frac));
+      node.dataset.level = clock.left <= 5000 ? 'red' : clock.left <= 10000 ? 'yellow' : 'green';
+      node.querySelector('.clock-num').textContent = sec;
+      node.setAttribute('aria-label', t('timerLeft', sec));
+    });
+    clock.shown = sec;
+  }
+
+  /* Time is up: the turn burns (steps already made stay) and passes to the other side. */
+  async function timeUp(my) {
+    if (!state || !F.timeOut(state)) return;
+    busy = true;
+    selectedId = null;
+    sfx('whoosh');
+    say('timeUp');
+    refresh();
+    await pause(1900);
+    return passTurn(my);
+  }
+
+  function setTimer(sec, remember) {
+    timerSec = sec;
+    if (remember) save('forest-timer', String(sec));
+    document.querySelectorAll('.seg button[data-timer]').forEach((b) => {
+      b.setAttribute('aria-checked', Number(b.dataset.timer) === sec ? 'true' : 'false');
+    });
+    el.timerNote.dataset.t = 'menu.timerNote' + sec;
+    el.timerNote.textContent = t(el.timerNote.dataset.t);
   }
 
   /* ------------------------------------------------------------------ */
@@ -663,6 +802,7 @@
     F.nextTurn(state);
     selectedId = null;
     busy = false;
+    resetClock();
     announceTurn();
     refresh();
     if (isCpuTurn()) return cpuTurn(my);
@@ -771,6 +911,7 @@
   }
   function leaveIntro() {
     audio(); // unlock sound while we are inside a tap
+    hideHint();
     el.intro.hidden = true;
     if (introReturn === 'game' && state) el.game.hidden = false;
     else el.menu.hidden = false;
@@ -805,12 +946,16 @@
     el.intro.hidden = true;
     el.menu.hidden = true;
     el.game.hidden = false;
+    resetClock();
+    if (timerSec > 0) startClockLoop();
+    else stopClockLoop();
     announceTurn();
     refresh();
     if (isCpuTurn()) cpuTurn(session);
   }
 
   function toMenu() {
+    stopClockLoop();
     session++;
     busy = false;
     state = null;
@@ -858,6 +1003,9 @@
   /* ------------------------------------------------------------------ */
 
   document.querySelectorAll('[data-art]').forEach((node) => { node.innerHTML = ART[node.dataset.art](); });
+  el.clockRed.innerHTML = CLOCK_SVG;
+  el.clockBlue.innerHTML = CLOCK_SVG;
+  setTimer(timerSec, false);
   buildBoard();
   applyLang();
 
@@ -866,14 +1014,26 @@
   el.skip.addEventListener('change', () => save('forest-skip-intro', el.skip.checked ? '1' : null));
   byId('btnAboutMenu').addEventListener('click', () => showIntro('menu'));
   byId('btnAbout').addEventListener('click', () => showIntro('game'));
+  // Cheat sheet hints: a tap on a pair opens its hint (a second tap closes it); a tap anywhere else closes it.
+  document.addEventListener('click', (e) => {
+    const pair = e.target.closest && e.target.closest('.s-pair');
+    if (!pair) { hideHint(); return; }
+    const i = Number(pair.dataset.i);
+    if (i === hintAt) hideHint();
+    else showHint(i);
+  });
+  window.addEventListener('resize', placeHintArrow);
 
   byId('btnTwo').addEventListener('click', () => startGame('two'));
   byId('btnCpu').addEventListener('click', () => startGame('cpu'));
-  document.querySelectorAll('.seg button').forEach((b) => {
+  document.querySelectorAll('.seg button[data-level]').forEach((b) => {
     b.addEventListener('click', () => {
       level = b.dataset.level;
-      document.querySelectorAll('.seg button').forEach((o) => o.setAttribute('aria-checked', o === b ? 'true' : 'false'));
+      document.querySelectorAll('.seg button[data-level]').forEach((o) => o.setAttribute('aria-checked', o === b ? 'true' : 'false'));
     });
+  });
+  document.querySelectorAll('.seg button[data-timer]').forEach((b) => {
+    b.addEventListener('click', () => setTimer(Number(b.dataset.timer), true));
   });
 
   byId('btnRulesMenu').addEventListener('click', () => openModal(el.rules, byId('btnRulesClose')));
@@ -895,7 +1055,8 @@
   });
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
-    if (!el.rules.hidden) closeModal(el.rules);
+    if (hintAt >= 0) hideHint();
+    else if (!el.rules.hidden) closeModal(el.rules);
     else if (!el.quit.hidden) closeModal(el.quit);
     else if (state && selectedId && !busy) { selectedId = null; refresh(); }
   });

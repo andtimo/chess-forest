@@ -26,7 +26,10 @@
       <div class="intro-hero">
         <h1 class="intro-title" data-t="intro.title"></h1>
         <p class="intro-sub" data-t="intro.subtitle"></p>
-        <ul class="sheet" id="sheet" data-t-aria="intro.sheet"></ul>
+        <div class="sheet-wrap">
+          <ul class="sheet" id="sheet" data-t-aria="intro.sheet"></ul>
+          <p class="sheet-hint" id="sheetHint" role="status" hidden></p>
+        </div>
       </div>
       <div class="intro-text">
         <p class="intro-lead" data-t="intro.lead"></p>
@@ -71,6 +74,15 @@
           </div>
         </div>
       </div>
+      <div class="timer-block">
+        <span id="timerLabel" data-t="menu.timer"></span>
+        <div class="seg seg-timer" role="radiogroup" aria-labelledby="timerLabel" aria-describedby="timerNote">
+          <button type="button" role="radio" aria-checked="true" data-timer="0" data-t="menu.timer0"></button>
+          <button type="button" role="radio" aria-checked="false" data-timer="30"><span class="t-long" data-t="menu.timer30"></span><span class="t-short" data-t="menu.timer30s"></span></button>
+          <button type="button" role="radio" aria-checked="false" data-timer="15"><span class="t-long" data-t="menu.timer15"></span><span class="t-short" data-t="menu.timer15s"></span></button>
+        </div>
+        <p class="timer-note" id="timerNote" data-t="menu.timerNote0"></p>
+      </div>
       <button type="button" class="btn btn-ghost" id="btnRulesMenu" data-t="menu.rules"></button>
     </div>
   </div>
@@ -87,6 +99,7 @@
 
   <div class="team blue" id="teamBlue">
     <span class="team-dot" aria-hidden="true"></span>
+    <span class="clock" id="clockBlue" role="timer" hidden></span>
     <span class="team-name" data-t="team.blue"></span>
     <span class="team-who" id="whoBlue"></span>
     <span class="team-turn" data-t="team.turn"></span>
@@ -103,6 +116,7 @@
 
   <div class="team red" id="teamRed">
     <span class="team-dot" aria-hidden="true"></span>
+    <span class="clock" id="clockRed" role="timer" hidden></span>
     <span class="team-name" data-t="team.red"></span>
     <span class="team-who" id="whoRed"></span>
     <span class="team-turn" data-t="team.turn"></span>
@@ -139,6 +153,7 @@
         <li><span class="r-ico r-die" data-art="star"></span><div data-t-html="rules.stars.html"></div></li>
         <li><span class="r-ico r-die"></span><div data-t-html="rules.empty.html"></div></li>
       </ul>
+      <p class="rules-timer" data-t="rules.timer"></p>
 
       <h3 data-t="rules.h.moves"></h3>
       <p data-t="rules.oneStep"></p>

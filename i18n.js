@@ -16,6 +16,11 @@
   };
   const RU_SHEET = { lion: 'Лев', hare: 'Заяц', squirrel: 'Белка', fox: 'Лиса', lynx: 'Рысь', panther: 'Пантера' };
   const RU_PIECE = { king: 'Король', pawn: 'Пешка', knight: 'Конь', bishop: 'Слон', rook: 'Ладья', queen: 'Ферзь' };
+  // Tap hint under the cheat sheet: how the animal moves.
+  const RU_HINT = {
+    lion: 'ходит на 1 клетку в любую сторону', hare: 'бежит только вперёд', squirrel: 'прыгает буквой «Г» через зверей',
+    fox: 'ходит наискосок', lynx: 'ходит прямо: вперёд, назад и вбок', panther: 'ходит и прямо, и наискосок'
+  };
   const ruStars = (n) => (n === 1 ? 'Выпала 1 звёздочка' : 'Выпало ' + n + ' звёздочки');
   const ruSteps = (n) => (n === 1 ? '1 шаг' : n + ' шага');
 
@@ -38,6 +43,7 @@
     'intro.skip': 'Больше не показывать при входе',
     'intro.sheet': 'Зверь = шахматная фигура',
     'sheetItem': (a, p) => RU_SHEET[a] + ' = ' + RU_PIECE[p],
+    'sheetHint': (a) => RU_HINT[a],
 
     'menu.subtitle': 'Лесная игра для маленьких шахматистов',
     'menu.two': 'Играть вдвоём',
@@ -45,6 +51,15 @@
     'menu.level': 'Компьютер:',
     'menu.easy': 'Добрый',
     'menu.smart': 'Хитрый',
+    'menu.timer': 'Таймер:',
+    'menu.timer0': 'Без таймера',
+    'menu.timer30': '30 секунд',
+    'menu.timer15': '15 секунд',
+    'menu.timer30s': '30 сек', // short labels for narrow phones
+    'menu.timer15s': '15 сек',
+    'menu.timerNote0': 'для малышей 2–3 лет',
+    'menu.timerNote30': 'для детей 4–6 лет',
+    'menu.timerNote15': 'Блиц для старших детей и взрослых',
     'menu.rules': 'Правила',
 
     'game.menu': 'Меню',
@@ -70,7 +85,7 @@
     'rules.title': 'Как играть',
     'rules.close': 'Понятно',
     'rules.h.win': 'Как победить',
-    'rules.lion.html': '<b>Царские обнимашки.</b> Поймай чужого Льва.',
+    'rules.lion.html': '<b>Царские обнимашки.</b> Поймай чужого Льва своим Львом.',
     'rules.hare.html': '<b>Заячий триумф.</b> Доведи своего Зайчика до дальнего края леса.',
     'rules.h.die': 'Кубик',
     'rules.die': 'Команды ходят по очереди. Брось кубик и делай то, что выпало.',
@@ -78,6 +93,7 @@
     'rules.tree.html': '<b>Дерево.</b> Твоя Белочка прыгает на ближайшее дерево и получает орешек. Пока соперник делает свой ход, её никто не достанет.',
     'rules.stars.html': '<b>Звёздочки.</b> Сколько звёздочек, столько шагов. Шаги можно отдать одному зверю или разделить между разными. Можно закончить ход раньше.',
     'rules.empty.html': '<b>Пустая грань.</b> Звери решили отдохнуть, ход пропускается.',
+    'rules.timer': 'Таймер (если включён): на ход даётся 30 или 15 секунд. Не успел — ход переходит к сопернику.',
     'rules.h.moves': 'Как ходят звери',
     'rules.oneStep': 'Один шаг каждого зверя:',
     'rules.m.lion.html': '<b>Лев</b> идёт на одну клетку в любую сторону. Ловит любого зверя соперника.',
@@ -89,7 +105,7 @@
     'rules.hunt1': 'Чтобы поймать зверя, наступи на его клетку. Пойманный зверь уходит отдыхать в домик.',
     'rules.hunt2': 'Поймал зверя, и ход закончился.',
     'rules.hunt3': 'Перепрыгивать через других зверей умеет только Белочка.',
-    'rules.hunt4': 'Лисичка и Рысь тоже могут поймать чужого Льва.',
+    'rules.hunt4': 'Чужого Льва может поймать только Лев.',
 
     'label': (team, kind) => {
       const fem = RU_ANIMAL[kind].fem;
@@ -127,6 +143,8 @@
     'hareHome': 'Зайчик добежал до края леса!',
     'stuck': 'Больше ходить некуда.',
     'left': (n) => (n === 1 ? 'Остался ' : 'Осталось ') + ruSteps(n) + '.',
+    'timeUp': 'Время вышло! Ход переходит к сопернику.',
+    'timerLeft': (n) => 'Осталось секунд: ' + n,
     'winLionTitle': 'Лев пойман!',
     'winHareTitle': 'Заячий триумф!',
     'winLionText': 'Царские обнимашки! Все звери обнимаются.',
@@ -146,6 +164,10 @@
   };
   const SK_SHEET = { lion: 'Lev', hare: 'Zajac', squirrel: 'Veverička', fox: 'Líška', lynx: 'Rys', panther: 'Panter' };
   const SK_PIECE = { king: 'Kráľ', pawn: 'Pešiak', knight: 'Jazdec', bishop: 'Strelec', rook: 'Veža', queen: 'Dáma' };
+  const SK_HINT = {
+    lion: 'chodí o 1 políčko ľubovoľným smerom', hare: 'beží iba dopredu', squirrel: 'skáče do tvaru „L“ ponad zvieratká',
+    fox: 'chodí šikmo', lynx: 'chodí rovno: dopredu, dozadu a nabok', panther: 'chodí rovno aj šikmo'
+  };
   const skStars = (n) => (n === 1 ? 'Padla 1 hviezdička' : 'Padli ' + n + ' hviezdičky');
   const skSteps = (n) => (n === 1 ? '1 krok' : n + ' kroky');
 
@@ -168,6 +190,7 @@
     'intro.skip': 'Pri vstupe už nezobrazovať',
     'intro.sheet': 'Zvieratko = šachová figúrka',
     'sheetItem': (a, p) => SK_SHEET[a] + ' = ' + SK_PIECE[p],
+    'sheetHint': (a) => SK_HINT[a],
 
     'menu.subtitle': 'Lesná hra pre malých šachistov',
     'menu.two': 'Hrať vo dvojici',
@@ -175,6 +198,15 @@
     'menu.level': 'Počítač:',
     'menu.easy': 'Dobrý',
     'menu.smart': 'Prefíkaný',
+    'menu.timer': 'Časovač:',
+    'menu.timer0': 'Bez časovača',
+    'menu.timer30': '30 sekúnd',
+    'menu.timer15': '15 sekúnd',
+    'menu.timer30s': '30 sekúnd',
+    'menu.timer15s': '15 sekúnd',
+    'menu.timerNote0': 'pre najmenších od 2 do 3 rokov',
+    'menu.timerNote30': 'pre deti od 4 do 6 rokov',
+    'menu.timerNote15': 'Blesková hra pre staršie deti a dospelých',
     'menu.rules': 'Pravidlá',
 
     'game.menu': 'Menu',
@@ -200,7 +232,7 @@
     'rules.title': 'Ako hrať',
     'rules.close': 'Rozumiem',
     'rules.h.win': 'Ako vyhrať',
-    'rules.lion.html': '<b>Kráľovské objímanie.</b> Chyť súperovho Leva.',
+    'rules.lion.html': '<b>Kráľovské objímanie.</b> Chyť súperovho Leva svojím Levom.',
     'rules.hare.html': '<b>Zajačí triumf.</b> Doveď svojho Zajačika na druhý koniec lesa.',
     'rules.h.die': 'Kocka',
     'rules.die': 'Tímy sa striedajú. Hoď kockou a urob to, čo padlo.',
@@ -208,6 +240,7 @@
     'rules.tree.html': '<b>Strom.</b> Tvoja Veverička vyskočí na najbližší strom a dostane oriešok. Kým súper robí svoj ťah, nikto ju nedostane.',
     'rules.stars.html': '<b>Hviezdičky.</b> Koľko hviezdičiek, toľko krokov. Kroky môžeš dať jednému zvieratku alebo ich rozdeliť medzi viaceré. Ťah môžeš ukončiť aj skôr.',
     'rules.empty.html': '<b>Prázdna stena.</b> Zvieratká si išli oddýchnuť, ťah sa vynecháva.',
+    'rules.timer': 'Časovač (ak je zapnutý): na ťah máš 30 alebo 15 sekúnd. Ak to nestihneš, ťah prechádza na súpera.',
     'rules.h.moves': 'Ako chodia zvieratká',
     'rules.oneStep': 'Jeden krok každého zvieratka:',
     'rules.m.lion.html': '<b>Lev</b> prejde o jedno políčko ľubovoľným smerom. Chytí akékoľvek súperovo zvieratko.',
@@ -219,7 +252,7 @@
     'rules.hunt1': 'Zvieratko chytíš tak, že stúpiš na jeho políčko. Chytené zvieratko ide oddychovať do domčeka.',
     'rules.hunt2': 'Keď chytíš zvieratko, ťah sa končí.',
     'rules.hunt3': 'Preskakovať iné zvieratká vie iba Veverička.',
-    'rules.hunt4': 'Líška a Rys môžu chytiť aj súperovho Leva.',
+    'rules.hunt4': 'Súperovho Leva môže chytiť iba Lev.',
 
     'label': (team, kind) => {
       const fem = SK_ANIMAL[kind].fem;
@@ -257,6 +290,8 @@
     'hareHome': 'Zajačik dobehol na koniec lesa!',
     'stuck': 'Už nie je kam ísť.',
     'left': (n) => (n === 1 ? 'Zostal 1 krok.' : 'Zostali ' + n + ' kroky.'),
+    'timeUp': 'Čas vypršal! Ťah prechádza na súpera.',
+    'timerLeft': (n) => 'Zostáva sekúnd: ' + n,
     'winLionTitle': 'Lev je chytený!',
     'winHareTitle': 'Zajačí triumf!',
     'winLionText': 'Kráľovské objímanie! Všetky zvieratká sa objímajú.',
@@ -267,9 +302,13 @@
   };
 
   /* ---------------- English ---------------- */
-  const EN_ANIMAL = { hare: 'Hare', fox: 'Fox', lion: 'Lion', lynx: 'Lynx', squirrel: 'Squirrel' };
-  const EN_SHEET = { lion: 'Lion', hare: 'Hare', squirrel: 'Squirrel', fox: 'Fox', lynx: 'Lynx', panther: 'Panther' };
+  const EN_ANIMAL = { hare: 'Bunny', fox: 'Fox', lion: 'Lion', lynx: 'Lynx', squirrel: 'Squirrel' };
+  const EN_SHEET = { lion: 'Lion', hare: 'Bunny', squirrel: 'Squirrel', fox: 'Fox', lynx: 'Lynx', panther: 'Panther' };
   const EN_PIECE = { king: 'King', pawn: 'Pawn', knight: 'Knight', bishop: 'Bishop', rook: 'Rook', queen: 'Queen' };
+  const EN_HINT = {
+    lion: 'moves 1 square in any direction', hare: 'runs forward only', squirrel: 'jumps in an “L” over animals',
+    fox: 'moves diagonally', lynx: 'moves straight: forward, back and sideways', panther: 'moves straight and diagonally'
+  };
   const enStars = (n) => (n === 1 ? '1 star' : n + ' stars');
   const enSteps = (n) => (n === 1 ? '1 step' : n + ' steps');
 
@@ -292,6 +331,7 @@
     'intro.skip': 'Don’t show this at start again',
     'intro.sheet': 'Animal = chess piece',
     'sheetItem': (a, p) => EN_SHEET[a] + ' = ' + EN_PIECE[p],
+    'sheetHint': (a) => EN_HINT[a],
 
     'menu.subtitle': 'A forest game for little chess players',
     'menu.two': 'Play together',
@@ -299,6 +339,15 @@
     'menu.level': 'Computer:',
     'menu.easy': 'Kind',
     'menu.smart': 'Clever',
+    'menu.timer': 'Timer:',
+    'menu.timer0': 'No Timer',
+    'menu.timer30': '30 sec',
+    'menu.timer15': '15 sec',
+    'menu.timer30s': '30 sec',
+    'menu.timer15s': '15 sec',
+    'menu.timerNote0': 'for little ones aged 2–3',
+    'menu.timerNote30': 'for children aged 4–6',
+    'menu.timerNote15': 'Blitz for older children and adults',
     'menu.rules': 'Rules',
 
     'game.menu': 'Menu',
@@ -324,26 +373,27 @@
     'rules.title': 'How to play',
     'rules.close': 'Got it',
     'rules.h.win': 'How to win',
-    'rules.lion.html': '<b>Royal hugs.</b> Catch the other team’s Lion.',
-    'rules.hare.html': '<b>Hare’s triumph.</b> Bring your Hare to the far edge of the forest.',
+    'rules.lion.html': '<b>Royal hugs.</b> Catch the other team’s Lion with your Lion.',
+    'rules.hare.html': '<b>Bunny’s triumph.</b> Bring your Bunny to the far edge of the forest.',
     'rules.h.die': 'The die',
     'rules.die': 'The teams take turns. Roll the die and do what it shows.',
-    'rules.carrot.html': '<b>Carrot.</b> Your Hare jumps to the nearest carrot and eats. While the other team takes its turn, the Hare can’t be caught.',
+    'rules.carrot.html': '<b>Carrot.</b> Your Bunny jumps to the nearest carrot and eats. While the other team takes its turn, the Bunny can’t be caught.',
     'rules.tree.html': '<b>Tree.</b> Your Squirrel jumps onto the nearest tree and gets a nut. While the other team takes its turn, nobody can reach her.',
     'rules.stars.html': '<b>Stars.</b> As many stars, as many steps. Give all the steps to one animal or share them between several. You can end your turn early.',
     'rules.empty.html': '<b>Empty side.</b> The animals decided to rest; the turn is skipped.',
+    'rules.timer': 'Timer (if switched on): you have 30 or 15 seconds for a turn. If time runs out, the turn passes to the other side.',
     'rules.h.moves': 'How the animals move',
     'rules.oneStep': 'One step of each animal:',
     'rules.m.lion.html': '<b>Lion</b> moves one square in any direction. Catches any animal of the other team.',
-    'rules.m.hare.html': '<b>Hare</b> moves one square, forward only. Catches nobody.',
+    'rules.m.hare.html': '<b>Bunny</b> moves one square, forward only. Catches nobody.',
     'rules.m.squirrel.html': '<b>Squirrel</b> jumps in an “L” like a chess knight: two squares straight and one to the side. Jumps over animals. Catches nobody.',
-    'rules.m.fox.html': '<b>Fox</b> moves one square diagonally. Catches the Hare and the Squirrel.',
-    'rules.m.lynx.html': '<b>Lynx</b> moves one square straight: forward, back or sideways. Catches the Hare and the Squirrel. Only the Lynx can catch a Squirrel on a tree.',
+    'rules.m.fox.html': '<b>Fox</b> moves one square diagonally. Catches the Bunny and the Squirrel.',
+    'rules.m.lynx.html': '<b>Lynx</b> moves one square straight: forward, back or sideways. Catches the Bunny and the Squirrel. Only the Lynx can catch a Squirrel on a tree.',
     'rules.h.hunt': 'Forest hunt',
     'rules.hunt1': 'To catch an animal, step onto its square. The caught animal goes to rest in the den.',
     'rules.hunt2': 'After a catch, the turn ends.',
     'rules.hunt3': 'Only the Squirrel can jump over other animals.',
-    'rules.hunt4': 'The Fox and the Lynx can catch the other team’s Lion too.',
+    'rules.hunt4': 'Only a Lion can catch the other team’s Lion.',
 
     'label': (team, kind) => (team === 'red' ? 'Red ' : 'Blue ') + EN_ANIMAL[kind],
     'cell': (name, type) => 'Square ' + name + (type === 'carrot' ? ', carrot' : type === 'tree' ? ', tree' : ''),
@@ -354,31 +404,33 @@
     'noBonus': (kind, reason) => {
       if (kind === 'hare') {
         return reason === 'caught'
-          ? 'Carrot! But the Hare is already resting in the den. The turn is skipped.'
-          : 'Carrot! But the Hare can’t reach one. The turn is skipped.';
+          ? 'Carrot! But the Bunny is already resting in the den. The turn is skipped.'
+          : 'Carrot! But the Bunny can’t reach one. The turn is skipped.';
       }
       return reason === 'caught'
         ? 'Tree! But the Squirrel is already resting in the den. The turn is skipped.'
         : 'Tree! But both trees are taken. The turn is skipped.';
     },
     'noMoves': (n) => 'Rolled ' + enStars(n) + ', but there is nowhere to go. The turn is skipped.',
-    'chooseCarrot': 'Carrot! Choose which carrot the Hare jumps to.',
+    'chooseCarrot': 'Carrot! Choose which carrot the Bunny jumps to.',
     'chooseTree': 'Tree! Choose which tree the Squirrel jumps onto.',
     'rolledCpu': (n) => 'Rolled ' + enStars(n) + '. The computer is moving…',
     'rolledYou': (n) => 'You rolled ' + enStars(n) + '. Pick an animal and make ' + enSteps(n) + '.',
-    'bonusHare': 'Carrot! The Hare is eating and can’t be caught.',
+    'bonusHare': 'Carrot! The Bunny is eating and can’t be caught.',
     'bonusSquirrel': 'Tree! The Squirrel is nibbling a nut and can’t be reached.',
     'catch': (hunter, prey) => {
       if (prey === 'lion') return 'The ' + EN_ANIMAL[hunter] + ' caught the Lion!';
       return 'The ' + EN_ANIMAL[hunter] + ' caught the ' + EN_ANIMAL[prey] + '! The ' + EN_ANIMAL[prey] + ' went to rest in the den.';
     },
-    'hareHome': 'The Hare reached the edge of the forest!',
+    'hareHome': 'The Bunny reached the edge of the forest!',
     'stuck': 'No more moves.',
     'left': (n) => enSteps(n) + ' left.',
+    'timeUp': 'Time’s up! The turn passes to the other side.',
+    'timerLeft': (n) => (n === 1 ? '1 second left' : n + ' seconds left'),
     'winLionTitle': 'The Lion is caught!',
-    'winHareTitle': 'Hare’s triumph!',
+    'winHareTitle': 'Bunny’s triumph!',
     'winLionText': 'Royal hugs! All the animals hug each other.',
-    'winHareText': 'The Hare ran through the whole forest and escaped!',
+    'winHareText': 'The Bunny ran through the whole forest and escaped!',
     'winTeam': (team) => (team === 'red' ? 'The Red team wins!' : 'The Blue team wins!'),
     'winCpu': 'The computer won. You’ll do it next time!',
     'winYou': 'You won!'

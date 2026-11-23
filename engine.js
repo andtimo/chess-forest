@@ -82,7 +82,7 @@
   function canCapture(hunter, target) {
     if (hunter.team === target.team || !isPredator(hunter)) return false;
     if (target.shield) return false; // eating a carrot / holding a nut
-    if (target.kind === 'lion') return true; // ends the game
+    if (target.kind === 'lion') return hunter.kind === 'lion'; // only a Lion catches a Lion; ends the game
     if (target.kind === 'fox' || target.kind === 'lynx') return hunter.kind === 'lion';
     if (target.kind === 'squirrel' && cellType(target.x, target.y) === 'tree') return hunter.kind === 'lynx';
     return true;
@@ -253,6 +253,17 @@
     return true;
   }
 
+  /* The turn timer ran out: the turn is lost; steps already made stay. */
+  function timeOut(state) {
+    if (state.phase !== 'roll' && state.phase !== 'move' && state.phase !== 'choose') return false;
+    // The die wasn't rolled, but the turn still counts: this team's protection ends as if it had rolled.
+    if (state.phase === 'roll') for (const p of state.pieces) if (p.team === state.turn) p.shield = false;
+    state.stepsLeft = 0;
+    state.choices = null;
+    state.phase = 'end';
+    return true;
+  }
+
   function nextTurn(state) {
     if (state.phase !== 'end') return false;
     state.turn = other(state.turn);
@@ -374,7 +385,7 @@
   }
 
   // The kind ("easy") computer thinks only on this share of its turns; otherwise it just wanders.
-  // Measured over many games: a child tapping at random wins about 1 game in 5 against it,
+  // Measured over many games (only a Lion catches a Lion): a child tapping at random wins about 1 game in 7 against it,
   // a child who plays on purpose half of the time wins about 7 in 10.
   const EASY_FOCUS = 0.2;
 
@@ -436,7 +447,7 @@
     other, forward, farRow, cellType, isPredator,
     newGame, clone, pieceAt, getPiece, findPiece,
     canCapture, stepMoves, allMoves, bonusTargets,
-    beginRoll, applyBonus, step, endTurnEarly, nextTurn, rollDie,
+    beginRoll, applyBonus, step, endTurnEarly, timeOut, nextTurn, rollDie,
     evaluate, aiPlan, aiChooseBonus
   };
 })(typeof window !== 'undefined' ? window : globalThis);
