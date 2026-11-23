@@ -55,6 +55,22 @@
     }
     return '<polygon points="' + pts.join(' ') + '" fill="#ffc93c" stroke="#e8a200" stroke-width="3" stroke-linejoin="round"/>';
   }
+  /* One picture inside another: the 100x100 drawing moved to (x, y) and shrunk to `size`. */
+  function place(art, x, y, size) {
+    const body = art.replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
+    return '<g transform="translate(' + x + ' ' + y + ') scale(' + (size / 100) + ')">' + body + '</g>';
+  }
+  function scene(body) {
+    return '<svg viewBox="0 0 160 96" aria-hidden="true" focusable="false">' + body + '</svg>';
+  }
+  // A goldfish looking left (100x100 drawing).
+  const FISH =
+    '<path d="M70 50L92 33v34z" fill="#f76707"/>' +
+    '<path d="M40 36Q52 20 66 37z" fill="#f76707"/>' +
+    '<ellipse cx="45" cy="51" rx="30" ry="17" fill="#ff922b"/>' +
+    '<path d="M38 40q7 11 0 22" fill="none" stroke="#f76707" stroke-width="3" stroke-linecap="round"/>' +
+    '<circle cx="27" cy="47" r="4.2" fill="' + INK + '"/><circle cx="28.4" cy="45.5" r="1.5" fill="#fff"/>' +
+    '<path d="M16 55q4 2 7 0" fill="none" stroke="#c2410c" stroke-width="2" stroke-linecap="round"/>';
 
   const ART = {
     lion() {
@@ -145,6 +161,93 @@
         '<path d="M50 69v3m0 0q-4 4-8 1m8-1q4 4 8 1" fill="none" stroke="#9a9ab2" stroke-width="2" stroke-linecap="round"/>' +
         '<path d="M30 68l-14-2m14 6l-13 4m53-8l14-2m-14 6l13 4" stroke="#8a8aa2" stroke-width="1.6" stroke-linecap="round"/>',
         'animal'
+      );
+    },
+    bear() {
+      return svg(
+        '<circle cx="24" cy="30" r="13" fill="#7c4f27"/><circle cx="24" cy="30" r="6.5" fill="#d6a173"/>' +
+        '<circle cx="76" cy="30" r="13" fill="#7c4f27"/><circle cx="76" cy="30" r="6.5" fill="#d6a173"/>' +
+        '<ellipse cx="50" cy="57" rx="33" ry="31" fill="#93602f"/>' +
+        '<ellipse cx="50" cy="71" rx="15.5" ry="12" fill="#e6c49a"/>' +
+        eye(38, 52, 4.4) + eye(62, 52, 4.4) +
+        '<ellipse cx="50" cy="65" rx="6.2" ry="4.4" fill="' + INK + '"/>' +
+        '<path d="M50 69.5v3.5m0 0q-4.5 4.5-8.5 1m8.5-1q4.5 4.5 8.5 1" fill="none" stroke="#5a3414" stroke-width="2" stroke-linecap="round"/>',
+        'animal'
+      );
+    },
+    fish() { return svg('<g transform="rotate(-10 50 50)">' + FISH + '</g>'); },
+    water() {
+      const wave = (y) => '<path d="M10 ' + y + 'q6.7-6 13.3 0t13.3 0 13.3 0 13.3 0 13.3 0 13.3 0" fill="none" stroke="#e7f5ff" stroke-width="4" stroke-linecap="round"/>';
+      return svg(
+        wave(22) + wave(86) +
+        '<g transform="translate(12 18) scale(.76) rotate(-8 50 50)">' + FISH + '</g>' +
+        '<g fill="none" stroke="#e7f5ff" stroke-width="2.2"><circle cx="13" cy="50" r="3.2"/><circle cx="8" cy="40" r="2.2"/></g>'
+      );
+    },
+    trap() {
+      let teeth = '';
+      for (let i = 1; i <= 7; i++) {
+        const a = Math.PI + (i * Math.PI) / 8;
+        const pt = (r, da) => (50 + r * Math.cos(a + da)).toFixed(1) + ',' + (66 + r * 0.9 * Math.sin(a + da)).toFixed(1);
+        teeth += '<polygon points="' + pt(33, -0.13) + ' ' + pt(33, 0.13) + ' ' + pt(21, 0) + '"/>';
+      }
+      return svg(
+        '<ellipse cx="50" cy="72" rx="43" ry="14" fill="#8b6b4a"/>' +
+        '<ellipse cx="50" cy="70" rx="36" ry="9" fill="#5e4430"/>' +
+        '<path d="M17 66a33 29.7 0 0 1 66 0" fill="none" stroke="#6f7881" stroke-width="7" stroke-linecap="round"/>' +
+        '<g fill="#e9ecef" stroke="#6f7881" stroke-width="1.6" stroke-linejoin="round">' + teeth + '</g>' +
+        '<path d="M13 68h74" stroke="#495057" stroke-width="7" stroke-linecap="round"/>' +
+        '<ellipse cx="50" cy="64" rx="10" ry="4.6" fill="#ced4da" stroke="#495057" stroke-width="2"/>' +
+        '<circle cx="13" cy="68" r="5" fill="#adb5bd" stroke="#495057" stroke-width="2"/><circle cx="87" cy="68" r="5" fill="#adb5bd" stroke="#495057" stroke-width="2"/>'
+      );
+    },
+    // Die face of Map 2: carrot or fish.
+    food() {
+      return svg(
+        '<path d="M88 12L12 88" stroke="#d8ccb6" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 9"/>' +
+        place(ART.carrot(), -6, -6, 66) + place(ART.fish(), 40, 42, 60)
+      );
+    },
+    // Map pictures for the menu cards.
+    map1() {
+      let rays = '';
+      for (let i = 0; i < 8; i++) {
+        const a = (i * Math.PI) / 4;
+        rays += '<path d="M' + (136 + 15 * Math.cos(a)).toFixed(1) + ' ' + (19 + 15 * Math.sin(a)).toFixed(1) +
+          'L' + (136 + 21 * Math.cos(a)).toFixed(1) + ' ' + (19 + 21 * Math.sin(a)).toFixed(1) + '"/>';
+      }
+      const disc = (cx, cy) => '<circle cx="' + cx + '" cy="' + cy + '" r="21" fill="#fff" opacity=".75"/>';
+      return scene(
+        '<rect width="160" height="96" fill="#bfe9ff"/>' +
+        '<g stroke="#ffc107" stroke-width="3" stroke-linecap="round">' + rays + '</g><circle cx="136" cy="19" r="11" fill="#ffd43b"/>' +
+        '<path d="M0 42q40-14 80-3t80-7v64H0z" fill="#b2e58a"/>' +
+        '<path d="M0 60q50-13 100-2t60-3v41H0z" fill="#8fd46a"/>' +
+        '<g fill="#fff"><circle cx="56" cy="44" r="2"/><circle cx="98" cy="40" r="2"/><circle cx="72" cy="88" r="2"/></g>' +
+        '<g fill="#ff8fab"><circle cx="64" cy="42" r="2"/><circle cx="104" cy="88" r="2"/><circle cx="30" cy="56" r="2"/></g>' +
+        place(ART.tree(), 4, 8, 40) + place(ART.tree(), 108, 26, 34) +
+        place(ART.carrot(), 2, 62, 30) + place(ART.carrot(), 128, 60, 30) +
+        disc(58, 68) + disc(102, 68) +
+        place(ART.fox(), 39, 49, 38) + place(ART.lynx(), 83, 49, 38)
+      );
+    },
+    map2() {
+      const pine = (x, y, s) => '<path d="M' + x + ' ' + y + 'l' + s * 0.55 + ' ' + s * 1.6 + 'h' + -s * 1.1 + 'z"/>';
+      let back = '';
+      let front = '';
+      for (let i = 0; i < 9; i++) back += pine(8 + i * 19, 2 + (i % 2) * 5, 16);
+      for (let i = 0; i < 8; i++) front += pine(18 + i * 19, 12 + (i % 3) * 3, 14);
+      const disc = (cx, cy) => '<circle cx="' + cx + '" cy="' + cy + '" r="20" fill="#e9f5e1" opacity=".85"/>';
+      return scene(
+        '<rect width="160" height="96" fill="#2c5530"/>' +
+        '<g fill="#173520">' + back + '</g><g fill="#1f4628">' + front + '</g>' +
+        '<g fill="#ffe066"><circle cx="30" cy="28" r="1.6"/><circle cx="74" cy="20" r="1.3"/><circle cx="122" cy="30" r="1.6"/><circle cx="146" cy="14" r="1.2"/></g>' +
+        '<path d="M0 60v36h160V62z" fill="#356b39"/>' +
+        '<path d="M0 46c26-9 48 8 80 1s54-9 80 1v15c-26-8-48 6-80 2S24 56 0 63z" fill="#3b9be8"/>' +
+        '<path d="M8 54q7-4 14 0M58 57q7-4 14 0M118 52q7-4 14 0" fill="none" stroke="#a5d8ff" stroke-width="2" stroke-linecap="round"/>' +
+        place(ART.fish(), 82, 41, 20) +
+        disc(30, 72) + disc(128, 72) +
+        place(ART.panther(), 12, 54, 36) + place(ART.bear(), 110, 54, 36) +
+        place(ART.trap(), 62, 62, 34)
       );
     },
     carrot() {
@@ -248,7 +351,7 @@
         '<path d="M17 29l13 22 3-31 11 29 6-31 6 31 11-29 3 31 13-22-9 49H26z" ' + PIECE_INK + '/>' + BASE);
     }
   };
-  const SHEET = [['lion', 'king'], ['hare', 'pawn'], ['squirrel', 'knight'], ['fox', 'bishop'], ['lynx', 'rook'], ['panther', 'queen']];
+  const SHEET = [['lion', 'king'], ['hare', 'pawn'], ['squirrel', 'knight'], ['fox', 'bishop'], ['lynx', 'rook'], ['panther', 'queen'], ['bear', 'rook']];
 
   const BOW = '<svg class="bow" viewBox="0 0 44 22" aria-hidden="true" focusable="false">' +
     '<path d="M22 11L3 2v18zM22 11l19-9v18z" fill="currentColor" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>' +
@@ -257,6 +360,7 @@
   function dieFace(face) {
     switch (face) {
       case 'carrot': return ART.carrot();
+      case 'food': return ART.food();
       case 'tree': return ART.tree();
       case 'star1': return svg(star(50, 52, 34));
       case 'star2': return svg(star(30, 32, 23) + star(70, 70, 23));
@@ -325,6 +429,9 @@
         case 'bonus': [660, 880, 1100, 1320].forEach((f, i) => tone(a, f, t0 + i * 0.09, 0.14, 'sine', 0.12)); break;
         case 'rest': tone(a, 300, t0, 0.3, 'sine', 0.12, 170); break;
         case 'win': [523, 659, 784, 1047, 784, 1047].forEach((f, i) => tone(a, f, t0 + i * 0.14, 0.22, 'triangle', 0.16)); break;
+        // Map 2: a trap snapping shut, and a friend set free.
+        case 'trap': tone(a, 260, t0, 0.06, 'square', 0.08, 140); tone(a, 150, t0 + 0.07, 0.16, 'square', 0.07, 70); break;
+        case 'free': [587, 880, 1175].forEach((f, i) => tone(a, f, t0 + i * 0.08, 0.13, 'sine', 0.12)); break;
         // Turn timer: a quiet clock in the last seconds, and a soft gust of wind when time is up.
         case 'tick': tone(a, 1250, t0, 0.035, 'triangle', 0.05); break;
         case 'tock': tone(a, 950, t0, 0.035, 'triangle', 0.05); break;
@@ -367,6 +474,7 @@
     teamRed: byId('teamRed'), teamBlue: byId('teamBlue'), denRed: byId('denRed'), denBlue: byId('denBlue'),
     whoRed: byId('whoRed'), whoBlue: byId('whoBlue'), sound: byId('btnSound'),
     clockRed: byId('clockRed'), clockBlue: byId('clockBlue'), timerNote: byId('timerNote'),
+    topTitle: byId('topTitle'), rulesMap: byId('rulesMap'),
     rules: byId('rules'), quit: byId('quit'), win: byId('win'),
     winArt: byId('winArt'), winTitle: byId('winTitle'), winText: byId('winText'), winWho: byId('winWho'),
     confetti: byId('confetti'), again: byId('btnAgain')
@@ -384,6 +492,9 @@
   let introReturn = 'menu'; // where "Go to the game" leads: 'menu' | 'game'
   // Turn timer: 0 = off, otherwise seconds per turn (chosen in the menu, remembered on this device).
   let timerSec = [0, 30, 15].indexOf(Number(load('forest-timer'))) >= 0 ? Number(load('forest-timer')) : 0;
+  // Map chosen in the menu (1 «Солнечная поляна», 2 «Глубокий лес»), remembered on this device.
+  let mapId = load('forest-map') === '2' ? 2 : 1;
+  let boardMap = 0; // the map the board cells are drawn for
   const cellEls = [];
   let pieceEls = {};
 
@@ -397,10 +508,14 @@
   function isHumanTurn() { return state.phase !== 'over' && !(mode === 'cpu' && state.turn === CPU_TEAM); }
   function cellEl(x, y) { return cellEls[y * F.SIZE + x]; }
 
-  function buildBoard() {
+  function buildBoard(map) {
+    for (const c of cellEls) c.remove();
+    cellEls.length = 0;
+    boardMap = map;
+    el.board.dataset.map = map;
     for (let y = F.SIZE - 1; y >= 0; y--) {
       for (let x = 0; x < F.SIZE; x++) {
-        const type = F.cellType(x, y);
+        const type = F.cellType(x, y, map);
         const b = document.createElement('button');
         b.type = 'button';
         b.className = 'cell ' + type + ((x + y) % 2 ? ' alt' : '');
@@ -410,6 +525,14 @@
         cellEls[y * F.SIZE + x] = b;
         el.board.insertBefore(b, el.pieces);
       }
+    }
+    labelCells();
+  }
+  function labelCells() {
+    for (const c of cellEls) {
+      const x = Number(c.dataset.x);
+      const y = Number(c.dataset.y);
+      c.setAttribute('aria-label', t('cell', COLS[x] + (y + 1), F.cellType(x, y, boardMap)));
     }
   }
 
@@ -459,11 +582,13 @@
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'piece ' + p.team;
-    b.setAttribute('aria-label', label(p));
-    const badge = p.kind === 'hare' ? ART.carrot() : p.kind === 'squirrel' ? ART.nut() : '';
-    b.innerHTML = '<span class="token">' + ART[p.kind]() + BOW + '<span class="badge">' + badge + '</span></span>';
+    b.setAttribute('aria-label', pieceLabel(p));
+    const badge = p.kind === 'hare' ? ART.carrot() : p.kind === 'squirrel' ? ART.nut() : p.kind === 'bear' ? ART.fish() : '';
+    // .trapmark: Map 2, how many of its team's turns the animal still sits in a trap
+    b.innerHTML = '<span class="token">' + ART[p.kind]() + BOW + '<span class="badge">' + badge + '</span><span class="trapmark"></span></span>';
     return b;
   }
+  function pieceLabel(p) { return label(p) + (p.trapped > 0 ? ', ' + t('pieceTrapped') : ''); }
 
   function setDie(face) { el.dieFace.innerHTML = dieFace(face); }
 
@@ -497,13 +622,10 @@
     if (window.ForestHyphen) document.querySelectorAll('.intro-lead, .dev p, .maps').forEach((n) => window.ForestHyphen.apply(n, lang));
     document.querySelectorAll('.lang button').forEach((b) => { b.setAttribute('aria-pressed', b.dataset.lang === lang ? 'true' : 'false'); });
     buildSheet();
-    for (const c of cellEls) {
-      const x = Number(c.dataset.x);
-      const y = Number(c.dataset.y);
-      c.setAttribute('aria-label', t('cell', COLS[x] + (y + 1), F.cellType(x, y)));
-    }
+    labelCells();
+    el.topTitle.textContent = t('map.' + (state ? state.map : mapId));
     if (state) {
-      for (const p of state.pieces) if (pieceEls[p.id]) pieceEls[p.id].setAttribute('aria-label', label(p));
+      for (const p of state.pieces) if (pieceEls[p.id]) pieceEls[p.id].setAttribute('aria-label', pieceLabel(p));
     }
     document.querySelectorAll('.mini').forEach((m) => { m.setAttribute('aria-label', t('label', m.dataset.team, m.dataset.kind)); });
     renderWho();
@@ -533,6 +655,15 @@
       node.dataset.x = p.x;
       node.dataset.y = p.y;
       node.classList.toggle('shield', p.alive && p.shield);
+      // Map 2: the Bear in the water is safe; an animal in a trap shows how many turns it still sits out
+      node.classList.toggle('swim', p.alive && p.kind === 'bear' && F.cellType(p.x, p.y, state.map) === 'water');
+      const trapped = p.alive && p.trapped > 0;
+      if (node.classList.contains('trapped') !== trapped || (trapped && node.dataset.trap !== String(p.trapped))) {
+        node.classList.toggle('trapped', trapped);
+        node.dataset.trap = trapped ? p.trapped : '';
+        node.querySelector('.trapmark').textContent = trapped ? p.trapped : '';
+        node.setAttribute('aria-label', pieceLabel(p));
+      }
       node.classList.toggle('gone', !p.alive);
       node.classList.remove('movable', 'selected', 'threatened');
     }
@@ -551,8 +682,12 @@
       }
     }
     if (!busy && human && state.phase === 'choose') {
-      pieceEls[state.choices.pieceId].classList.add('selected');
-      for (const tg of state.choices.targets) cellEl(tg.x, tg.y).classList.add('target');
+      // One animal: it is chosen, pick its cell. Two (Carrot / Fish): both breathe, tap one of them or its cell.
+      const opts = state.choices.options;
+      for (const o of opts) {
+        pieceEls[o.pieceId].classList.add(opts.length > 1 ? 'movable' : 'selected');
+        for (const tg of o.targets) cellEl(tg.x, tg.y).classList.add('target');
+      }
     }
 
     el.teamRed.classList.toggle('active', state.phase !== 'over' && state.turn === 'red');
@@ -674,9 +809,10 @@
     el.die.classList.remove('landed');
     el.die.classList.add('rolling');
     sfx('roll');
-    let i = Math.floor(Math.random() * F.FACES.length);
+    const faces = F.facesOf(state.map);
+    let i = Math.floor(Math.random() * faces.length);
     for (let n = 0; n < 9; n++) {
-      setDie(F.FACES[i++ % F.FACES.length]);
+      setDie(faces[i++ % faces.length]);
       await pause(90);
       if (my !== session) break;
     }
@@ -692,7 +828,7 @@
     busy = true;
     selectedId = null;
     refresh();
-    const face = F.rollDie();
+    const face = F.rollDie(null, state.map);
     await animateDie(face, my);
     if (my !== session) return;
     const out = F.beginRoll(state, face);
@@ -725,7 +861,7 @@
         const tg = F.aiChooseBonus(state, level);
         return playBonus(F.applyBonus(state, tg.x, tg.y), my);
       }
-      say(out.kind === 'hare' ? 'chooseCarrot' : 'chooseTree');
+      say(out.options.length > 1 ? 'chooseFood' : out.kind === 'hare' ? 'chooseCarrot' : 'chooseTree');
       busy = false;
       refresh();
       return;
@@ -746,7 +882,7 @@
     busy = true;
     node.classList.add('hop', 'moving');
     sfx('bonus');
-    say(out.kind === 'hare' ? 'bonusHare' : 'bonusSquirrel');
+    say(out.kind === 'hare' ? 'bonusHare' : out.kind === 'squirrel' ? 'bonusSquirrel' : out.stayed ? 'bonusBearStay' : 'bonusBear');
     refresh();
     await pause(450);
     node.classList.remove('hop', 'moving');
@@ -757,8 +893,17 @@
       return;
     }
     await pause(1700);
+    if (my !== session) return;
+    if (out.freed.length) {
+      // the jump landed next to a teammate in a trap
+      sfx('free');
+      say('freed', kindsOf(out.freed), 0);
+      refresh();
+      await pause(1700);
+    }
     return passTurn(my);
   }
+  function kindsOf(ids) { return ids.map((id) => F.getPiece(state, id).kind); }
 
   /* Show one step that the engine has already applied. Resolves to true when the turn (or the game) is over. */
   async function playStep(ev, my) {
@@ -786,6 +931,24 @@
       await pause(ev.win === 'lion' ? 900 : 500);
       if (my === session) showWin();
       return true;
+    }
+    if (ev.trapped) {
+      // Map 2: into a trap (maybe right after a catch there); the turn is over.
+      if (ev.captured) { await pause(1300); if (my !== session) return true; }
+      sfx('trap');
+      say('inTrap', ev.piece.kind);
+      nudge(node);
+      refresh();
+      await pause(2600);
+      await passTurn(my);
+      return true;
+    }
+    if (ev.freed.length) {
+      sfx('free');
+      say('freed', kindsOf(ev.freed), ev.turnOver ? 0 : state.stepsLeft);
+      refresh();
+      await pause(ev.turnOver ? 1700 : 900);
+      if (my !== session) return true;
     }
     if (ev.turnOver) {
       if (ev.reason === 'capture') await pause(1700);
@@ -843,7 +1006,7 @@
     busy = false;
     selectedId = F.stepMoves(state, F.getPiece(state, id)).length ? id : null;
     autoSelect();
-    say('left', state.stepsLeft);
+    if (!ev.freed.length) say('left', state.stepsLeft); // the "set free" message already said it
     refresh();
   }
 
@@ -853,6 +1016,17 @@
     if (out) await playBonus(out, my);
   }
 
+  /* Carrot / Fish: the player tapped the Hare or the Bear. */
+  async function chooseBonusAnimal(id) {
+    const my = session;
+    const out = F.chooseBonusPiece(state, id);
+    if (!out) return;
+    if (out.type === 'bonus') { await playBonus(out, my); return; }
+    sfx('tap');
+    say(out.kind === 'hare' ? 'chooseCarrot' : 'chooseTree'); // the Hare has two carrots at the same distance
+    refresh();
+  }
+
   function nudge(node) {
     node.classList.add('nudge');
     setTimeout(() => node.classList.remove('nudge'), 320);
@@ -860,7 +1034,10 @@
 
   function onTap(x, y) {
     if (state.phase === 'choose') {
-      if (state.choices.targets.some((tg) => tg.x === x && tg.y === y)) chooseBonus(x, y);
+      const opts = state.choices.options;
+      const who = F.pieceAt(state, x, y);
+      if (who && opts.length > 1 && opts.some((o) => o.pieceId === who.id)) chooseBonusAnimal(who.id);
+      else if (opts.some((o) => o.targets.some((tg) => tg.x === x && tg.y === y))) chooseBonus(x, y);
       return;
     }
     if (state.phase !== 'move') return;
@@ -877,6 +1054,7 @@
       } else {
         selectedId = null;
         nudge(pieceEls[p.id]);
+        if (p.trapped > 0) say('trappedTap', p.kind, p.trapped);
       }
     } else {
       selectedId = null;
@@ -922,9 +1100,12 @@
     mode = newMode;
     session++;
     games++;
-    state = F.newGame(games % 2 === 1 ? 'red' : 'blue');
+    state = F.newGame(games % 2 === 1 ? 'red' : 'blue', mapId);
     busy = false;
     selectedId = null;
+    if (boardMap !== state.map) buildBoard(state.map);
+    el.game.dataset.map = state.map;
+    el.topTitle.textContent = t('map.' + state.map);
 
     el.pieces.innerHTML = '';
     pieceEls = {};
@@ -991,6 +1172,26 @@
     openModal(el.win, el.again);
   }
 
+  /* Rules of the map being played (or chosen in the menu). */
+  function openRules() {
+    const m = state ? state.map : mapId;
+    document.querySelectorAll('.rules-body').forEach((b) => {
+      b.hidden = Number(b.dataset.rules) !== m;
+      b.scrollTop = 0;
+    });
+    el.rulesMap.dataset.t = 'rules.map' + m;
+    el.rulesMap.textContent = t(el.rulesMap.dataset.t);
+    openModal(el.rules, byId('btnRulesClose'));
+  }
+
+  function setMap(id, remember) {
+    mapId = id;
+    if (remember) save('forest-map', String(id));
+    document.querySelectorAll('.map-card').forEach((b) => {
+      b.setAttribute('aria-checked', Number(b.dataset.map) === id ? 'true' : 'false');
+    });
+  }
+
   function setSound(on) {
     soundOn = on;
     el.sound.innerHTML = soundIcon(on);
@@ -1006,7 +1207,8 @@
   el.clockRed.innerHTML = CLOCK_SVG;
   el.clockBlue.innerHTML = CLOCK_SVG;
   setTimer(timerSec, false);
-  buildBoard();
+  setMap(mapId, false);
+  buildBoard(mapId);
   applyLang();
 
   document.querySelectorAll('.lang button').forEach((b) => b.addEventListener('click', () => setLang(b.dataset.lang)));
@@ -1035,9 +1237,15 @@
   document.querySelectorAll('.seg button[data-timer]').forEach((b) => {
     b.addEventListener('click', () => setTimer(Number(b.dataset.timer), true));
   });
+  document.querySelectorAll('.map-card').forEach((b) => {
+    b.addEventListener('click', () => {
+      if (Number(b.dataset.map) !== mapId) sfx('tap');
+      setMap(Number(b.dataset.map), true);
+    });
+  });
 
-  byId('btnRulesMenu').addEventListener('click', () => openModal(el.rules, byId('btnRulesClose')));
-  byId('btnRules').addEventListener('click', () => openModal(el.rules, byId('btnRulesClose')));
+  byId('btnRulesMenu').addEventListener('click', openRules);
+  byId('btnRules').addEventListener('click', openRules);
   byId('btnRulesClose').addEventListener('click', () => closeModal(el.rules));
   byId('btnMenu').addEventListener('click', () => openModal(el.quit, byId('btnQuitNo')));
   byId('btnQuitNo').addEventListener('click', () => closeModal(el.quit));

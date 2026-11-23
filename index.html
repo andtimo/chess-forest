@@ -57,12 +57,33 @@
     </div>
   </div>
   <div class="menu-card">
-    <div class="menu-animals" aria-hidden="true">
-      <span data-art="hare"></span><span data-art="fox"></span><span data-art="lion"></span><span data-art="lynx"></span><span data-art="squirrel"></span>
+    <div class="menu-left">
+      <h1 class="title" data-t="doc.title"></h1>
+      <p class="subtitle" data-t="menu.subtitle"></p>
+      <!-- Map choice: a tap on a card picks it (remembered on this device) -->
+      <div class="map-pick" role="radiogroup" data-t-aria="menu.map">
+        <button type="button" class="map-card" role="radio" aria-checked="true" data-map="1">
+          <span class="map-pic" data-art="map1"></span>
+          <span class="map-name" data-t="map.1"></span>
+          <span class="map-age" data-t="map.1.age"></span>
+        </button>
+        <button type="button" class="map-card" role="radio" aria-checked="false" data-map="2">
+          <span class="map-pic" data-art="map2"></span>
+          <span class="map-name" data-t="map.2"></span>
+          <span class="map-age" data-t="map.2.age"></span>
+        </button>
+      </div>
     </div>
-    <h1 class="title" data-t="doc.title"></h1>
-    <p class="subtitle" data-t="menu.subtitle"></p>
     <div class="menu-buttons">
+      <div class="timer-block">
+        <span id="timerLabel" data-t="menu.timer"></span>
+        <div class="seg seg-timer" role="radiogroup" aria-labelledby="timerLabel" aria-describedby="timerNote">
+          <button type="button" role="radio" aria-checked="true" data-timer="0" data-t="menu.timer0"></button>
+          <button type="button" role="radio" aria-checked="false" data-timer="30"><span class="t-long" data-t="menu.timer30"></span><span class="t-short" data-t="menu.timer30s"></span></button>
+          <button type="button" role="radio" aria-checked="false" data-timer="15"><span class="t-long" data-t="menu.timer15"></span><span class="t-short" data-t="menu.timer15s"></span></button>
+        </div>
+        <p class="timer-note" id="timerNote" data-t="menu.timerNote0"></p>
+      </div>
       <button type="button" class="btn btn-green" id="btnTwo" data-t="menu.two"></button>
       <div class="cpu-block">
         <button type="button" class="btn btn-orange" id="btnCpu" data-t="menu.cpu"></button>
@@ -74,15 +95,6 @@
           </div>
         </div>
       </div>
-      <div class="timer-block">
-        <span id="timerLabel" data-t="menu.timer"></span>
-        <div class="seg seg-timer" role="radiogroup" aria-labelledby="timerLabel" aria-describedby="timerNote">
-          <button type="button" role="radio" aria-checked="true" data-timer="0" data-t="menu.timer0"></button>
-          <button type="button" role="radio" aria-checked="false" data-timer="30"><span class="t-long" data-t="menu.timer30"></span><span class="t-short" data-t="menu.timer30s"></span></button>
-          <button type="button" role="radio" aria-checked="false" data-timer="15"><span class="t-long" data-t="menu.timer15"></span><span class="t-short" data-t="menu.timer15s"></span></button>
-        </div>
-        <p class="timer-note" id="timerNote" data-t="menu.timerNote0"></p>
-      </div>
       <button type="button" class="btn btn-ghost" id="btnRulesMenu" data-t="menu.rules"></button>
     </div>
   </div>
@@ -91,7 +103,7 @@
 <main id="game" class="game" hidden>
   <header class="topbar">
     <button type="button" class="chip" id="btnMenu" data-t="game.menu"></button>
-    <span class="topbar-title" data-t="doc.title"></span>
+    <span class="topbar-title" id="topTitle"></span>
     <button type="button" class="chip" id="btnRules" data-t="menu.rules"></button>
     <button type="button" class="chip chip-icon" id="btnAbout" data-t-aria="about"><span data-art="info"></span></button>
     <button type="button" class="chip chip-icon" id="btnSound" aria-pressed="true"></button>
@@ -138,7 +150,9 @@
 <div id="rules" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
   <div class="card rules-card">
     <h2 id="rulesTitle" data-t="rules.title"></h2>
-    <div class="rules-body">
+    <p class="rules-map" id="rulesMap"></p>
+    <!-- Map 1 «Солнечная поляна» -->
+    <div class="rules-body" data-rules="1">
       <h3 data-t="rules.h.win"></h3>
       <ul class="rules-list">
         <li><span class="r-ico" data-art="lion"></span><div data-t-html="rules.lion.html"></div></li>
@@ -171,6 +185,51 @@
         <li data-t="rules.hunt2"></li>
         <li data-t="rules.hunt3"></li>
         <li data-t="rules.hunt4"></li>
+      </ul>
+    </div>
+    <!-- Map 2 «Глубокий лес»: the author's texts for the Panther, the Bear, the trap and the Carrot / Fish face -->
+    <div class="rules-body" data-rules="2" hidden>
+      <h3 data-t="rules.h.win"></h3>
+      <ul class="rules-list">
+        <li><span class="r-ico" data-art="lion"></span><div data-t-html="rules.lion.html"></div></li>
+        <li><span class="r-ico" data-art="hare"></span><div data-t-html="rules.hare.html"></div></li>
+      </ul>
+
+      <h3 data-t="rules.h.die"></h3>
+      <p data-t="rules.die"></p>
+      <ul class="rules-list">
+        <li><span class="r-ico r-die" data-art="food"></span><div data-t-html="rules.food.html"></div></li>
+        <li><span class="r-ico r-die" data-art="tree"></span><div data-t-html="rules.tree.html"></div></li>
+        <li><span class="r-ico r-die" data-art="star"></span><div data-t-html="rules.stars.html"></div></li>
+        <li><span class="r-ico r-die"></span><div data-t-html="rules.empty.html"></div></li>
+      </ul>
+      <p class="rules-timer" data-t="rules.timer"></p>
+
+      <h3 data-t="rules.h.moves"></h3>
+      <p data-t="rules.oneStep"></p>
+      <ul class="rules-list">
+        <li><span class="r-ico" data-art="lion"></span><div data-t-html="rules.m.lion.html"></div></li>
+        <li><span class="r-ico" data-art="hare"></span><div data-t-html="rules.m.hare.html"></div></li>
+        <li><span class="r-ico" data-art="squirrel"></span><div data-t-html="rules.m.squirrel.html"></div></li>
+        <li><span class="r-ico" data-art="panther"></span><div data-t-html="rules.m.panther.html"></div></li>
+        <li><span class="r-ico" data-art="bear"></span><div data-t-html="rules.m.bear.html"></div></li>
+      </ul>
+      <p class="rules-note" data-t="rules.run"></p>
+
+      <h3 data-t="rules.h.cells"></h3>
+      <ul class="rules-list">
+        <li><span class="r-ico r-cell r-trap" data-art="trap"></span><div data-t-html="rules.trap.html"></div></li>
+        <li><span class="r-ico r-cell r-water" data-art="water"></span><div data-t-html="rules.water.html"></div></li>
+      </ul>
+
+      <h3 data-t="rules.h.hunt"></h3>
+      <ul class="rules-plain">
+        <li data-t="rules.hunt1"></li>
+        <li data-t="rules.hunt2"></li>
+        <li data-t="rules.hunt3"></li>
+        <li data-t="rules.hunt4"></li>
+        <li data-t="rules.hunt5"></li>
+        <li data-t="rules.hunt6"></li>
       </ul>
     </div>
     <button type="button" class="btn btn-green" id="btnRulesClose" data-t="rules.close"></button>

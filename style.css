@@ -129,7 +129,7 @@ svg { display: block; }
 }
 .sheet {
   list-style: none;
-  display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px;
+  display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px;
   margin: 18px 0 16px; padding: 10px 6px 8px;
   background: #eaf6dc; border-radius: 18px;
 }
@@ -174,7 +174,7 @@ svg { display: block; }
 .pairs {
   grid-column: 1 / -1;
   list-style: none;
-  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, auto); grid-auto-flow: column;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(4, auto); grid-auto-flow: column;
   gap: 6px 8px;
   margin-top: 10px;
 }
@@ -279,15 +279,40 @@ svg { display: block; }
   text-align: center;
   box-shadow: 0 10px 0 rgba(88, 130, 60, .25), 0 24px 40px rgba(40, 70, 20, .18);
 }
-.menu-animals { display: flex; justify-content: center; gap: 6px; margin-bottom: 12px; }
-.menu-animals span {
-  width: 18%; max-width: 68px; aspect-ratio: 1;
-  border-radius: 50%; background: #eaf6dc;
-  display: grid; place-items: center;
-}
-.menu-animals svg { width: 88%; height: 88%; overflow: visible; }
 .title { font-size: clamp(30px, 9vw, 44px); font-weight: 900; color: #2b7a34; line-height: 1.05; }
-.subtitle { margin: 8px 0 22px; color: var(--muted); }
+.subtitle { margin: 6px 0 16px; color: var(--muted); }
+/* Map choice: two picture cards side by side */
+.map-pick { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+.map-card {
+  position: relative;
+  display: grid; justify-items: center; align-content: start;
+  padding: 5px 5px 8px;
+  border-radius: 18px;
+  background: #fff;
+  border: 3px solid var(--line);
+  box-shadow: 0 4px 0 var(--line);
+  transition: border-color .15s, box-shadow .15s, transform .08s;
+}
+.map-card:active { transform: translateY(2px); }
+.map-card[aria-checked="true"] {
+  border-color: var(--green);
+  box-shadow: 0 4px 0 var(--green-dark), 0 0 0 4px rgba(55, 178, 77, .22);
+}
+.map-card[aria-checked="true"]::after {
+  content: "✓";
+  position: absolute; top: -10px; right: -10px;
+  width: 28px; height: 28px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--green); color: #fff;
+  font-weight: 900; font-size: 16px; line-height: 1;
+  box-shadow: 0 2px 0 var(--green-dark);
+}
+.map-pic { display: block; width: 100%; aspect-ratio: 160 / 96; border-radius: 12px; overflow: hidden; }
+.map-pic svg { width: 100%; height: 100%; }
+.map-name { margin-top: 6px; font-weight: 900; font-size: 16px; line-height: 1.15; color: var(--ink); text-wrap: balance; }
+.map-card[data-map="1"] .map-name { color: #2b7a34; }
+.map-card[data-map="2"] .map-name { color: #1d5a2c; }
+.map-age { margin-top: 1px; font-size: 13px; font-weight: 700; color: var(--muted); }
 .menu-buttons { display: grid; gap: 14px; }
 .cpu-block { display: grid; gap: 10px; }
 .level { display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--muted); font-size: 15px; }
@@ -305,27 +330,43 @@ svg { display: block; }
 }
 .timer-note { font-size: 14px; line-height: 1.25; color: var(--muted); }
 
-/* Wide screens: the menu takes the game's width, animals and title on the left, buttons on the right. */
+/* Wide screens: the menu takes the game's width, title and maps on the left, timer and buttons on the right. */
 @media (min-aspect-ratio: 11/10) {
   .menu-corner, .menu-card { width: min(100%, calc(var(--vh) + 336px)); }
   .menu-card {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-areas: "animals buttons" "title buttons" "sub buttons";
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
     align-content: center; align-items: center;
     column-gap: clamp(20px, 5vh, 56px);
     padding: clamp(18px, 4vh, 40px);
   }
-  .menu-animals { grid-area: animals; flex-wrap: wrap; gap: 10px 4%; margin-bottom: 10px; }
-  .menu-animals span { width: 26%; max-width: 170px; }
-  .title { grid-area: title; font-size: clamp(30px, 7vh, 84px); }
-  .subtitle { grid-area: sub; margin-bottom: 0; font-size: clamp(15px, 2.6vh, 28px); }
-  .menu-buttons { grid-area: buttons; gap: clamp(14px, 2.2vh, 26px); }
+  .title { font-size: clamp(28px, 6.4vh, 80px); }
+  .subtitle { margin-bottom: clamp(12px, 2.6vh, 28px); font-size: clamp(15px, 2.6vh, 28px); }
+  .map-pick { margin-bottom: 0; gap: clamp(12px, 2.4vh, 26px); }
+  .map-name { font-size: clamp(15px, 2.6vh, 28px); }
+  .map-age { font-size: clamp(13px, 2vh, 21px); }
+  .menu-buttons { gap: clamp(14px, 2.2vh, 26px); }
   .menu-buttons .btn { min-height: clamp(52px, 8vh, 84px); font-size: clamp(18px, 2.8vh, 28px); }
   .level { font-size: clamp(15px, 2.2vh, 22px); }
   .seg button { min-height: clamp(36px, 5vh, 52px); font-size: clamp(15px, 2.2vh, 22px); }
   .timer-block { font-size: clamp(15px, 2.2vh, 22px); }
   .timer-note { font-size: clamp(14px, 1.9vh, 19px); }
+}
+/* Phone on its side: everything in the menu must fit without scrolling. */
+@media (min-aspect-ratio: 11/10) and (max-height: 560px) {
+  .menu { gap: 8px; padding-top: max(8px, env(safe-area-inset-top)); padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+  .menu-card { padding: 12px 18px; }
+  .title { font-size: 28px; }
+  .subtitle { margin: 2px 0 10px; font-size: 15px; }
+  .menu-buttons { gap: 8px; }
+  .menu-buttons .btn { min-height: 42px; padding-block: 6px; font-size: 18px; }
+  .cpu-block { gap: 5px; }
+  .timer-block { gap: 3px; font-size: 14px; }
+  .seg button { min-height: 32px; padding-block: 4px; font-size: 15px; }
+  .seg-timer button { padding-inline: 8px; font-size: 14px; }
+  .timer-note { font-size: 13px; }
+  .map-name { font-size: 15px; }
+  .map-age { font-size: 13px; }
 }
 
 /* ---------- Game layout ---------- */
@@ -355,8 +396,9 @@ svg { display: block; }
 .topbar { grid-area: top; display: flex; align-items: center; gap: 6px; min-width: 0; }
 .topbar-title {
   flex: 1; min-width: 0; text-align: center;
-  font-weight: 900; font-size: clamp(14px, 4.1vw, 20px); color: #2b7a34;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-weight: 900; font-size: clamp(14px, 4.1vw, 20px); line-height: 1.05; color: #2b7a34;
+  /* the map name may take two short lines on a narrow phone */
+  text-wrap: balance; overflow: hidden; max-height: 2.1em;
 }
 .chip {
   min-height: 40px; padding: 6px 11px;
@@ -456,6 +498,17 @@ svg { display: block; }
 .cell.carrot { --tile: #ffe2b8; }
 .cell.tree { --tile: #e6f6cb; }
 .cell > svg { position: relative; width: 64%; height: 64%; overflow: visible; pointer-events: none; }
+/* Map 2 «Глубокий лес»: a darker forest, water in the centre, two traps */
+.board[data-map="2"] { background: #2d5428; }
+.board[data-map="2"] .cell { --tile: #5f9a4b; }
+.board[data-map="2"] .cell.grass.alt { --tile: #548b41; }
+.board[data-map="2"] .cell.carrot { --tile: #ecd3a4; }
+.board[data-map="2"] .cell.tree { --tile: #b8d79c; }
+.board[data-map="2"] .cell.water { --tile: #5db4f0; }
+.board[data-map="2"] .cell.trap { --tile: #c4a57c; }
+.cell.water > svg { width: 92%; height: 92%; }
+.cell.trap > svg { width: 74%; height: 74%; }
+.game[data-map="2"] .board-frame { background: #865a31; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .14), 0 5px 0 #5f3d1d, 0 12px 22px rgba(30, 30, 10, .3); }
 .cell.target::after {
   content: "";
   position: absolute; z-index: 1;
@@ -511,6 +564,23 @@ svg { display: block; }
 .badge svg { width: 78%; height: 78%; }
 .piece.shield .badge { display: grid; animation: pop-in .35s ease-out; }
 .piece.shield .token { box-shadow: 0 0 0 4px #ffe066, 0 0 16px 7px rgba(255, 200, 0, .8); }
+/* Map 2: the Bear in the water can't be caught (blue glow and a fish) */
+.piece.swim .badge { display: grid; border-color: #1c7ed6; animation: pop-in .35s ease-out; }
+.piece.swim .token { box-shadow: 0 0 0 4px #a5d8ff, 0 0 14px 6px rgba(34, 139, 230, .75); }
+/* Map 2: an animal in a trap is greyed out and shows how many turns it still sits out */
+.trapmark {
+  position: absolute; left: -10%; top: -10%;
+  width: 42%; height: 42%;
+  border-radius: 50%;
+  background: #495057; color: #fff; border: 2px solid #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .3);
+  display: none; place-items: center;
+  font-weight: 900; line-height: 1;
+  font-size: max(11px, calc(min(1cqw, 1cqh) * 3.4));
+}
+.piece.trapped .trapmark { display: grid; animation: pop-in .35s ease-out; }
+.piece.trapped .token .animal { filter: grayscale(.7) brightness(.92); }
+.piece.trapped .token { border-style: dashed; }
 .piece.movable .token { animation: breathe 1.2s ease-in-out infinite; }
 .piece.selected .token {
   animation: none;
@@ -625,6 +695,7 @@ svg { display: block; }
   animation: pop-in .25s ease-out;
 }
 .card h2 { font-size: 26px; font-weight: 900; color: #2b7a34; text-align: center; }
+.rules-map { margin-top: -8px; text-align: center; font-weight: 800; color: var(--orange-dark); line-height: 1.25; text-wrap: balance; }
 .small-card { width: min(100%, 400px); text-align: center; }
 .small-card p { font-size: 17px; }
 .card-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
@@ -645,6 +716,10 @@ svg { display: block; }
 .r-die { padding: 7px; border-radius: 12px; background: #fff; border: 2px solid #e3d7c3; box-shadow: 0 3px 0 #cbbfa9; }
 .rules-plain { padding-left: 22px; display: grid; gap: 6px; }
 .rules-body .rules-timer { margin: 12px 0 0; }
+.rules-body .rules-note { margin: 10px 0 0; padding: 8px 12px; border-radius: 12px; background: #eaf6dc; }
+.r-cell { padding: 5px; border-radius: 12px; }
+.r-trap { background: #c4a57c; }
+.r-water { background: #5db4f0; padding: 2px; }
 
 .win-card h2 { font-size: 30px; }
 .win-art { width: 132px; height: 132px; margin: 0 auto; }
