@@ -129,7 +129,7 @@ svg { display: block; }
 }
 .sheet {
   list-style: none;
-  display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px;
+  display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px;
   margin: 18px 0 16px; padding: 10px 6px 8px;
   background: #eaf6dc; border-radius: 18px;
 }
@@ -174,7 +174,7 @@ svg { display: block; }
 .pairs {
   grid-column: 1 / -1;
   list-style: none;
-  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(4, auto); grid-auto-flow: column;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, auto); grid-auto-flow: column;
   gap: 6px 8px;
   margin-top: 10px;
 }
@@ -473,11 +473,12 @@ svg { display: block; }
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .18), 0 5px 0 #7d4f25, 0 12px 22px rgba(60, 40, 10, .25);
 }
 .board {
+  --n: 5; /* cells per side: Map 1 is 5x5, Map 2 is 6x6 */
   position: relative;
   width: 100%; height: 100%;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  grid-template-rows: repeat(5, 1fr);
+  grid-template-columns: repeat(var(--n), 1fr);
+  grid-template-rows: repeat(var(--n), 1fr);
   background: #5f9c43;
   border-radius: 3.5%;
 }
@@ -498,15 +499,13 @@ svg { display: block; }
 .cell.carrot { --tile: #ffe2b8; }
 .cell.tree { --tile: #e6f6cb; }
 .cell > svg { position: relative; width: 64%; height: 64%; overflow: visible; pointer-events: none; }
-/* Map 2 «Глубокий лес»: a darker forest, water in the centre, two traps */
-.board[data-map="2"] { background: #2d5428; }
+/* Map 2 «Глубокий лес»: 6x6, a darker forest, two traps */
+.board[data-map="2"] { --n: 6; background: #2d5428; }
 .board[data-map="2"] .cell { --tile: #5f9a4b; }
 .board[data-map="2"] .cell.grass.alt { --tile: #548b41; }
 .board[data-map="2"] .cell.carrot { --tile: #ecd3a4; }
 .board[data-map="2"] .cell.tree { --tile: #b8d79c; }
-.board[data-map="2"] .cell.water { --tile: #5db4f0; }
 .board[data-map="2"] .cell.trap { --tile: #c4a57c; }
-.cell.water > svg { width: 92%; height: 92%; }
 .cell.trap > svg { width: 74%; height: 74%; }
 .game[data-map="2"] .board-frame { background: #865a31; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .14), 0 5px 0 #5f3d1d, 0 12px 22px rgba(30, 30, 10, .3); }
 .cell.target::after {
@@ -523,9 +522,9 @@ svg { display: block; }
 .piece {
   --team: var(--red); --soft: var(--red-soft);
   position: absolute; z-index: 2;
-  left: calc(var(--x) * 20%);
-  top: calc((4 - var(--y)) * 20%);
-  width: 20%; height: 20%;
+  left: calc(var(--x) * 100% / var(--n));
+  top: calc((var(--n) - 1 - var(--y)) * 100% / var(--n));
+  width: calc(100% / var(--n)); height: calc(100% / var(--n));
   display: grid; place-items: center;
   pointer-events: auto;
   transition: left .34s cubic-bezier(.34, 1.3, .64, 1), top .34s cubic-bezier(.34, 1.3, .64, 1), opacity .3s ease, transform .3s ease;
@@ -564,9 +563,6 @@ svg { display: block; }
 .badge svg { width: 78%; height: 78%; }
 .piece.shield .badge { display: grid; animation: pop-in .35s ease-out; }
 .piece.shield .token { box-shadow: 0 0 0 4px #ffe066, 0 0 16px 7px rgba(255, 200, 0, .8); }
-/* Map 2: the Bear in the water can't be caught (blue glow and a fish) */
-.piece.swim .badge { display: grid; border-color: #1c7ed6; animation: pop-in .35s ease-out; }
-.piece.swim .token { box-shadow: 0 0 0 4px #a5d8ff, 0 0 14px 6px rgba(34, 139, 230, .75); }
 /* Map 2: an animal in a trap is greyed out and shows how many turns it still sits out */
 .trapmark {
   position: absolute; left: -10%; top: -10%;
@@ -719,11 +715,14 @@ svg { display: block; }
 .rules-body .rules-note { margin: 10px 0 0; padding: 8px 12px; border-radius: 12px; background: #eaf6dc; }
 .r-cell { padding: 5px; border-radius: 12px; }
 .r-trap { background: #c4a57c; }
-.r-water { background: #5db4f0; padding: 2px; }
 
 .win-card h2 { font-size: 30px; }
 .win-art { width: 132px; height: 132px; margin: 0 auto; }
 .win-art svg { width: 100%; height: 100%; overflow: visible; animation: cheer 1s ease-in-out infinite; }
+/* Map 2 draw: two Lions side by side, a bit smaller */
+.win-pair { display: flex; justify-content: center; gap: 4px; width: 100%; height: 100%; }
+.win-pair svg { width: 50%; height: auto; }
+.win-pair svg + svg { animation-delay: -.5s; }
 .win-who { font-weight: 900; font-size: 22px; }
 .win-who.red { color: var(--red-dark); }
 .win-who.blue { color: var(--blue-dark); }

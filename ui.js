@@ -63,14 +63,6 @@
   function scene(body) {
     return '<svg viewBox="0 0 160 96" aria-hidden="true" focusable="false">' + body + '</svg>';
   }
-  // A goldfish looking left (100x100 drawing).
-  const FISH =
-    '<path d="M70 50L92 33v34z" fill="#f76707"/>' +
-    '<path d="M40 36Q52 20 66 37z" fill="#f76707"/>' +
-    '<ellipse cx="45" cy="51" rx="30" ry="17" fill="#ff922b"/>' +
-    '<path d="M38 40q7 11 0 22" fill="none" stroke="#f76707" stroke-width="3" stroke-linecap="round"/>' +
-    '<circle cx="27" cy="47" r="4.2" fill="' + INK + '"/><circle cx="28.4" cy="45.5" r="1.5" fill="#fff"/>' +
-    '<path d="M16 55q4 2 7 0" fill="none" stroke="#c2410c" stroke-width="2" stroke-linecap="round"/>';
 
   const ART = {
     lion() {
@@ -163,27 +155,6 @@
         'animal'
       );
     },
-    bear() {
-      return svg(
-        '<circle cx="24" cy="30" r="13" fill="#7c4f27"/><circle cx="24" cy="30" r="6.5" fill="#d6a173"/>' +
-        '<circle cx="76" cy="30" r="13" fill="#7c4f27"/><circle cx="76" cy="30" r="6.5" fill="#d6a173"/>' +
-        '<ellipse cx="50" cy="57" rx="33" ry="31" fill="#93602f"/>' +
-        '<ellipse cx="50" cy="71" rx="15.5" ry="12" fill="#e6c49a"/>' +
-        eye(38, 52, 4.4) + eye(62, 52, 4.4) +
-        '<ellipse cx="50" cy="65" rx="6.2" ry="4.4" fill="' + INK + '"/>' +
-        '<path d="M50 69.5v3.5m0 0q-4.5 4.5-8.5 1m8.5-1q4.5 4.5 8.5 1" fill="none" stroke="#5a3414" stroke-width="2" stroke-linecap="round"/>',
-        'animal'
-      );
-    },
-    fish() { return svg('<g transform="rotate(-10 50 50)">' + FISH + '</g>'); },
-    water() {
-      const wave = (y) => '<path d="M10 ' + y + 'q6.7-6 13.3 0t13.3 0 13.3 0 13.3 0 13.3 0 13.3 0" fill="none" stroke="#e7f5ff" stroke-width="4" stroke-linecap="round"/>';
-      return svg(
-        wave(22) + wave(86) +
-        '<g transform="translate(12 18) scale(.76) rotate(-8 50 50)">' + FISH + '</g>' +
-        '<g fill="none" stroke="#e7f5ff" stroke-width="2.2"><circle cx="13" cy="50" r="3.2"/><circle cx="8" cy="40" r="2.2"/></g>'
-      );
-    },
     trap() {
       let teeth = '';
       for (let i = 1; i <= 7; i++) {
@@ -201,11 +172,11 @@
         '<circle cx="13" cy="68" r="5" fill="#adb5bd" stroke="#495057" stroke-width="2"/><circle cx="87" cy="68" r="5" fill="#adb5bd" stroke="#495057" stroke-width="2"/>'
       );
     },
-    // Die face of Map 2: carrot or fish.
-    food() {
+    // Die face of Map 2: carrot or tree (the player chooses who jumps).
+    carrottree() {
       return svg(
         '<path d="M88 12L12 88" stroke="#d8ccb6" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 9"/>' +
-        place(ART.carrot(), -6, -6, 66) + place(ART.fish(), 40, 42, 60)
+        place(ART.carrot(), -6, -6, 66) + place(ART.tree(), 42, 40, 60)
       );
     },
     // Map pictures for the menu cards.
@@ -236,18 +207,17 @@
       let front = '';
       for (let i = 0; i < 9; i++) back += pine(8 + i * 19, 2 + (i % 2) * 5, 16);
       for (let i = 0; i < 8; i++) front += pine(18 + i * 19, 12 + (i % 3) * 3, 14);
-      const disc = (cx, cy) => '<circle cx="' + cx + '" cy="' + cy + '" r="20" fill="#e9f5e1" opacity=".85"/>';
       return scene(
         '<rect width="160" height="96" fill="#2c5530"/>' +
         '<g fill="#173520">' + back + '</g><g fill="#1f4628">' + front + '</g>' +
         '<g fill="#ffe066"><circle cx="30" cy="28" r="1.6"/><circle cx="74" cy="20" r="1.3"/><circle cx="122" cy="30" r="1.6"/><circle cx="146" cy="14" r="1.2"/></g>' +
-        '<path d="M0 60v36h160V62z" fill="#356b39"/>' +
-        '<path d="M0 46c26-9 48 8 80 1s54-9 80 1v15c-26-8-48 6-80 2S24 56 0 63z" fill="#3b9be8"/>' +
-        '<path d="M8 54q7-4 14 0M58 57q7-4 14 0M118 52q7-4 14 0" fill="none" stroke="#a5d8ff" stroke-width="2" stroke-linecap="round"/>' +
-        place(ART.fish(), 82, 41, 20) +
-        disc(30, 72) + disc(128, 72) +
-        place(ART.panther(), 12, 54, 36) + place(ART.bear(), 110, 54, 36) +
-        place(ART.trap(), 62, 62, 34)
+        '<path d="M0 52q40-8 80-2t80-2v48H0z" fill="#356b39"/>' +
+        // a winding forest path with the trap on it
+        '<path d="M70 96q-6-14 14-22t2-24" fill="none" stroke="#7a5a36" stroke-width="13" stroke-linecap="round" opacity=".55"/>' +
+        place(ART.tree(), 116, 30, 40) +
+        '<circle cx="42" cy="68" r="21" fill="#e9f5e1" opacity=".85"/>' +
+        place(ART.panther(), 23, 49, 38) +
+        place(ART.trap(), 80, 54, 38)
       );
     },
     carrot() {
@@ -351,7 +321,7 @@
         '<path d="M17 29l13 22 3-31 11 29 6-31 6 31 11-29 3 31 13-22-9 49H26z" ' + PIECE_INK + '/>' + BASE);
     }
   };
-  const SHEET = [['lion', 'king'], ['hare', 'pawn'], ['squirrel', 'knight'], ['fox', 'bishop'], ['lynx', 'rook'], ['panther', 'queen'], ['bear', 'rook']];
+  const SHEET = [['lion', 'king'], ['hare', 'pawn'], ['squirrel', 'knight'], ['fox', 'bishop'], ['lynx', 'rook'], ['panther', 'queen']];
 
   const BOW = '<svg class="bow" viewBox="0 0 44 22" aria-hidden="true" focusable="false">' +
     '<path d="M22 11L3 2v18zM22 11l19-9v18z" fill="currentColor" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>' +
@@ -360,8 +330,9 @@
   function dieFace(face) {
     switch (face) {
       case 'carrot': return ART.carrot();
-      case 'food': return ART.food();
+      case 'carrottree': return ART.carrottree();
       case 'tree': return ART.tree();
+      case 'trap': return ART.trap();
       case 'star1': return svg(star(50, 52, 34));
       case 'star2': return svg(star(30, 32, 23) + star(70, 70, 23));
       case 'star3': return svg(star(50, 28, 21) + star(26, 72, 21) + star(74, 72, 21));
@@ -377,7 +348,7 @@
       '</svg>';
   }
 
-  const COLS = 'abcde';
+  const COLS = 'abcdef';
   function label(p) { return t('label', p.team, p.kind); }
 
   /* ------------------------------------------------------------------ */
@@ -506,15 +477,16 @@
   }
   function isCpuTurn() { return mode === 'cpu' && state.phase !== 'over' && state.turn === CPU_TEAM; }
   function isHumanTurn() { return state.phase !== 'over' && !(mode === 'cpu' && state.turn === CPU_TEAM); }
-  function cellEl(x, y) { return cellEls[y * F.SIZE + x]; }
+  function cellEl(x, y) { return cellEls[y * F.sizeOf(boardMap) + x]; }
 
   function buildBoard(map) {
     for (const c of cellEls) c.remove();
     cellEls.length = 0;
     boardMap = map;
     el.board.dataset.map = map;
-    for (let y = F.SIZE - 1; y >= 0; y--) {
-      for (let x = 0; x < F.SIZE; x++) {
+    const n = F.sizeOf(map); // 5x5 or 6x6; the CSS reads the size from data-map
+    for (let y = n - 1; y >= 0; y--) {
+      for (let x = 0; x < n; x++) {
         const type = F.cellType(x, y, map);
         const b = document.createElement('button');
         b.type = 'button';
@@ -522,7 +494,7 @@
         b.dataset.x = x;
         b.dataset.y = y;
         if (type !== 'grass') b.innerHTML = ART[type]();
-        cellEls[y * F.SIZE + x] = b;
+        cellEls[y * n + x] = b;
         el.board.insertBefore(b, el.pieces);
       }
     }
@@ -583,7 +555,7 @@
     b.type = 'button';
     b.className = 'piece ' + p.team;
     b.setAttribute('aria-label', pieceLabel(p));
-    const badge = p.kind === 'hare' ? ART.carrot() : p.kind === 'squirrel' ? ART.nut() : p.kind === 'bear' ? ART.fish() : '';
+    const badge = p.kind === 'hare' ? ART.carrot() : p.kind === 'squirrel' ? ART.nut() : '';
     // .trapmark: Map 2, how many of its team's turns the animal still sits in a trap
     b.innerHTML = '<span class="token">' + ART[p.kind]() + BOW + '<span class="badge">' + badge + '</span><span class="trapmark"></span></span>';
     return b;
@@ -655,8 +627,7 @@
       node.dataset.x = p.x;
       node.dataset.y = p.y;
       node.classList.toggle('shield', p.alive && p.shield);
-      // Map 2: the Bear in the water is safe; an animal in a trap shows how many turns it still sits out
-      node.classList.toggle('swim', p.alive && p.kind === 'bear' && F.cellType(p.x, p.y, state.map) === 'water');
+      // Map 2: an animal in a trap shows how many turns it still sits out
       const trapped = p.alive && p.trapped > 0;
       if (node.classList.contains('trapped') !== trapped || (trapped && node.dataset.trap !== String(p.trapped))) {
         node.classList.toggle('trapped', trapped);
@@ -682,11 +653,13 @@
       }
     }
     if (!busy && human && state.phase === 'choose') {
-      // One animal: it is chosen, pick its cell. Two (Carrot / Fish): both breathe, tap one of them or its cell.
+      // One animal: it is chosen, pick its cell. Several (Carrot/Tree face, or a tie on the trap face):
+      // they all breathe; tap one of them or its cell. A trap that several tied animals share is not
+      // marked: tapping it can't tell who goes, so the player taps the animal.
       const opts = state.choices.options;
       for (const o of opts) {
         pieceEls[o.pieceId].classList.add(opts.length > 1 ? 'movable' : 'selected');
-        for (const tg of o.targets) cellEl(tg.x, tg.y).classList.add('target');
+        for (const tg of o.targets) if (choiceOwner(tg.x, tg.y)) cellEl(tg.x, tg.y).classList.add('target');
       }
     }
 
@@ -781,13 +754,16 @@
 
   /* Time is up: the turn burns (steps already made stay) and passes to the other side. */
   async function timeUp(my) {
-    if (!state || !F.timeOut(state)) return;
+    const res = state && F.timeOut(state);
+    if (!res) return;
     busy = true;
     selectedId = null;
     sfx('whoosh');
     say('timeUp');
     refresh();
     await pause(1900);
+    if (my !== session) return;
+    if (res.type === 'trap') return playTrap(res, my); // a trap tie: the game picked the animal
     return passTurn(my);
   }
 
@@ -853,15 +829,21 @@
       await pause(2300);
       return passTurn(my);
     }
-    if (out.type === 'bonus') return playBonus(out, my);
-    if (out.type === 'bonus-choose') {
+    if (out.type === 'trap-none') {
+      sfx('rest');
+      say('trapNone');
+      await pause(2300);
+      return passTurn(my);
+    }
+    if (out.type === 'bonus' || out.type === 'trap') return playJump(out, my);
+    if (out.type === 'bonus-choose' || out.type === 'trap-choose') {
       if (isCpuTurn()) {
         await pause(700);
         if (my !== session) return;
         const tg = F.aiChooseBonus(state, level);
-        return playBonus(F.applyBonus(state, tg.x, tg.y), my);
+        return playJump(F.applyBonus(state, tg.x, tg.y, tg.pieceId), my);
       }
-      say(out.options.length > 1 ? 'chooseFood' : out.kind === 'hare' ? 'chooseCarrot' : 'chooseTree');
+      sayChoose(out);
       busy = false;
       refresh();
       return;
@@ -877,12 +859,46 @@
     refresh();
   }
 
+  /* What to ask the player when a jump needs a choice (which animal, or which cell). */
+  function chooseKey(out) {
+    if (out.type === 'trap-choose') return out.options.length > 1 ? ['trapChooseAnimal'] : ['trapChooseCell', out.kind];
+    if (out.options.length > 1) return ['chooseCarrotTree'];
+    return [out.kind === 'hare' ? 'chooseCarrot' : 'chooseTree'];
+  }
+  function sayChoose(out) { say.apply(null, chooseKey(out)); }
+
+  function playJump(out, my) { return out.type === 'trap' ? playTrap(out, my) : playBonus(out, my); }
+
+  /* Map 2 trap face: the animal nearest to a free trap falls in (the turn is over). */
+  async function playTrap(out, my) {
+    const node = pieceEls[out.pieceId];
+    busy = true;
+    say(out.stayed ? 'trapFaceAgain' : 'trapFace', out.kind);
+    if (!out.stayed) { node.classList.add('hop', 'moving'); sfx('hop'); }
+    refresh();
+    await pause(out.stayed ? 150 : 450);
+    node.classList.remove('hop', 'moving');
+    if (my !== session) return;
+    sfx('trap');
+    nudge(node);
+    refresh();
+    await pause(2800);
+    if (my !== session) return;
+    if (out.freed.length) {
+      sfx('free');
+      say('freed', kindsOf(out.freed), 0);
+      refresh();
+      await pause(1700);
+    }
+    return passTurn(my);
+  }
+
   async function playBonus(out, my) {
     const node = pieceEls[out.pieceId];
     busy = true;
     node.classList.add('hop', 'moving');
     sfx('bonus');
-    say(out.kind === 'hare' ? 'bonusHare' : out.kind === 'squirrel' ? 'bonusSquirrel' : out.stayed ? 'bonusBearStay' : 'bonusBear');
+    say(out.kind === 'hare' ? 'bonusHare' : 'bonusSquirrel');
     refresh();
     await pause(450);
     node.classList.remove('hop', 'moving');
@@ -928,7 +944,8 @@
     node.classList.remove('moving', 'hop');
 
     if (ev.win) {
-      await pause(ev.win === 'lion' ? 900 : 500);
+      // 'draw' (Map 2): the last animal besides the two Lions was just caught
+      await pause(ev.win === 'lion' ? 900 : ev.win === 'draw' ? 1500 : 500);
       if (my === session) showWin();
       return true;
     }
@@ -1010,20 +1027,20 @@
     refresh();
   }
 
-  async function chooseBonus(x, y) {
+  async function chooseBonus(x, y, pieceId) {
     const my = session;
-    const out = F.applyBonus(state, x, y);
-    if (out) await playBonus(out, my);
+    const out = F.applyBonus(state, x, y, pieceId);
+    if (out) await playJump(out, my);
   }
 
-  /* Carrot / Fish: the player tapped the Hare or the Bear. */
+  /* The player tapped an animal: the Hare or the Squirrel (Carrot/Tree face), or one of the tied animals (trap face). */
   async function chooseBonusAnimal(id) {
     const my = session;
     const out = F.chooseBonusPiece(state, id);
     if (!out) return;
-    if (out.type === 'bonus') { await playBonus(out, my); return; }
+    if (out.type === 'bonus' || out.type === 'trap') { await playJump(out, my); return; }
     sfx('tap');
-    say(out.kind === 'hare' ? 'chooseCarrot' : 'chooseTree'); // the Hare has two carrots at the same distance
+    sayChoose(out); // this animal has two cells at the same distance: now pick one
     refresh();
   }
 
@@ -1032,12 +1049,19 @@
     setTimeout(() => node.classList.remove('nudge'), 320);
   }
 
+  /* During a choice: the one option (animal) a cell belongs to, or null if none or several share it. */
+  function choiceOwner(x, y) {
+    const hits = state.choices.options.filter((o) => o.targets.some((tg) => tg.x === x && tg.y === y));
+    return hits.length === 1 ? hits[0] : null;
+  }
+
   function onTap(x, y) {
     if (state.phase === 'choose') {
       const opts = state.choices.options;
       const who = F.pieceAt(state, x, y);
+      const owner = choiceOwner(x, y);
       if (who && opts.length > 1 && opts.some((o) => o.pieceId === who.id)) chooseBonusAnimal(who.id);
-      else if (opts.some((o) => o.targets.some((tg) => tg.x === x && tg.y === y))) chooseBonus(x, y);
+      else if (owner) chooseBonus(x, y, owner.pieceId);
       return;
     }
     if (state.phase !== 'move') return;
@@ -1149,10 +1173,19 @@
 
   function renderWin() {
     const w = state.winner;
+    if (state.winReason === 'draw') {
+      // Map 2: only the two Lions are left, nobody loses
+      el.winArt.innerHTML = '<span class="win-pair">' + ART.lion() + ART.lion() + '</span>';
+      el.winTitle.textContent = t('winDrawTitle');
+      el.winText.textContent = t('winDrawText');
+      el.winWho.hidden = true;
+      return;
+    }
     const lion = state.winReason === 'lion';
     el.winArt.innerHTML = lion ? ART.lion() : ART.hare();
     el.winTitle.textContent = t(lion ? 'winLionTitle' : 'winHareTitle');
     el.winText.textContent = t(lion ? 'winLionText' : 'winHareText');
+    el.winWho.hidden = false;
     el.winWho.textContent = mode === 'cpu' ? t(w === CPU_TEAM ? 'winCpu' : 'winYou') : t('winTeam', w);
     el.winWho.className = 'win-who ' + w;
   }

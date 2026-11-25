@@ -2,27 +2,32 @@
  * Шахматный лес: game rules and the computer opponent.
  * No DOM here, only game state, so the rules can be tested on their own.
  *
- * Board: 5x5, x = column (0..4, left to right), y = row (0 = Red home row, 4 = Blue home row).
+ * Board: n x n (n = 5 or 6 per map), x = column (0..n-1, left to right), y = row (0 = Red home row, n-1 = Blue home row).
  * Two maps; each is the same for both teams when the board is turned round (every special cell has a twin):
- *   1 «Солнечная поляна»: Hare, Fox, Lion, Lynx, Squirrel; two carrots, two trees.
- *   2 «Глубокий лес»: Hare, Bear, Lion, Panther, Squirrel; two carrots, two trees, water in the centre, two traps.
+ *   1 «Солнечная поляна», 5x5: Hare, Fox, Lion, Lynx, Squirrel; two carrots, two trees.
+ *   2 «Глубокий лес», 6x6: Hare, Fox, Lion, Panther, Lynx, Squirrel; two carrots, two trees, two traps.
  */
 (function (root) {
   'use strict';
 
-  const SIZE = 5;
+  const SIZE = 5; // Map 1's size, kept for older callers; use sizeOf(map)
   const MAPS = {
     1: {
+      size: 5,
       lineup: ['hare', 'fox', 'lion', 'lynx', 'squirrel'], // left to right as each team sees its own row
       cells: { carrot: [[0, 2], [4, 2]], tree: [[1, 2], [3, 2]] },
       faces: ['carrot', 'tree', 'star1', 'star2', 'star3', 'empty']
     },
     2: {
-      lineup: ['hare', 'bear', 'lion', 'panther', 'squirrel'],
-      // the traps (d2, b4) stand in front of each team's Panther
-      cells: { carrot: [[0, 2], [4, 2]], tree: [[1, 2], [3, 2]], water: [[2, 2]], trap: [[3, 1], [1, 3]] },
-      // 'food': the player sends the Hare to a carrot or the Bear into the water
-      faces: ['food', 'tree', 'star1', 'star2', 'star3', 'empty']
+      size: 6,
+      lineup: ['hare', 'fox', 'lion', 'panther', 'lynx', 'squirrel'],
+      // "Middle band": seen from each team's own side, its third row reads carrot, trap, tree
+      // (Red: a3, c3, e3; Blue: f4, d4, b4).
+      cells: { carrot: [[0, 2], [5, 3]], tree: [[4, 2], [1, 3]], trap: [[2, 2], [3, 3]] },
+      // 'carrottree': the player sends the Hare to a carrot or the Squirrel to a tree;
+      // 'trap': the roller's animal nearest to a free trap falls into it
+      faces: ['carrottree', 'star1', 'star2', 'star3', 'empty', 'trap'],
+      lionsDraw: true // only the two Lions left: a draw (careful players could circle forever)
     }
   };
   // Map 1 names, kept for older callers.
@@ -35,31 +40,34 @@
   const ORTH = [[0, 1], [1, 0], [0, -1], [-1, 0]];
   const DIAG = [[1, 1], [1, -1], [-1, -1], [-1, 1]];
   const ALL8 = ORTH.concat(DIAG);
-  const HUNT_DIRS = { lion: ALL8, fox: DIAG, lynx: ORTH, bear: ORTH, panther: ALL8 };
-  // Bear and Panther run in one straight line during a turn: each star moves them one cell, but they don't turn.
-  const RUNNERS = { bear: true, panther: true };
+  const HUNT_DIRS = { lion: ALL8, fox: DIAG, lynx: ORTH, panther: ALL8 };
+  // The Panther runs in one straight line during a turn: each star moves it one cell, but it doesn't turn.
+  const RUNNERS = { panther: true };
   // Die faces that send an animal to a special cell, and who may go.
-  const BONUS_KINDS = { carrot: ['hare'], tree: ['squirrel'], food: ['hare', 'bear'] };
-  const BONUS_CELL = { hare: 'carrot', squirrel: 'tree', bear: 'water' };
+  const BONUS_KINDS = { carrot: ['hare'], tree: ['squirrel'], carrottree: ['hare', 'squirrel'] };
+  const BONUS_CELL = { hare: 'carrot', squirrel: 'tree' };
   const TRAP_TURNS = 2; // a trapped animal sits out this many of its team's turns
 
   function mapId(m) { return MAPS[m] ? Number(m) : 1; }
+  function sizeOf(map) { return MAPS[mapId(map)].size; }
   function other(team) { return team === 'red' ? 'blue' : 'red'; }
   function forward(team) { return team === 'red' ? 1 : -1; }
-  function farRow(team) { return team === 'red' ? SIZE - 1 : 0; }
-  function inside(x, y) { return x >= 0 && y >= 0 && x < SIZE && y < SIZE; }
+  function farRow(team, map) { return team === 'red' ? sizeOf(map) - 1 : 0; }
+  function inside(x, y, n) { return x >= 0 && y >= 0 && x < n && y < n; }
   function inList(list, x, y) { return list.some((c) => c[0] === x && c[1] === y); }
   function isPredator(p) { return !!HUNT_DIRS[p.kind]; }
+  function cheb(ax, ay, bx, by) { return Math.max(Math.abs(ax - bx), Math.abs(ay - by)); }
 
   function cellsOf(map, type) { return MAPS[mapId(map)].cells[type] || []; }
   function facesOf(map) { return MAPS[mapId(map)].faces; }
   function lineupOf(map) { return MAPS[mapId(map)].lineup; }
-  // Cell types per map as a flat 25-cell grid (looked up very often by the computer's search).
+  // Cell types per map as a flat n*n grid (looked up very often by the computer's search).
   const GRID = {};
-  for (const id in MAPS) {
+  function buildGrid(id) {
+    const n = MAPS[id].size;
     const g = [];
-    for (let y = 0; y < SIZE; y++) {
-      for (let x = 0; x < SIZE; x++) {
+    for (let y = 0; y < n; y++) {
+      for (let x = 0; x < n; x++) {
         let type = 'grass';
         for (const t in MAPS[id].cells) if (inList(MAPS[id].cells[t], x, y)) type = t;
         g.push(type);
@@ -67,20 +75,23 @@
     }
     GRID[id] = g;
   }
-  function cellType(x, y, map) { return (GRID[map] || GRID[1])[y * SIZE + x]; }
+  for (const id in MAPS) buildGrid(id);
+  /* Test hook: try another layout of special cells on a map. */
+  function setCells(map, cells) { MAPS[mapId(map)].cells = cells; buildGrid(mapId(map)); }
+  function cellType(x, y, map) { const id = GRID[map] ? map : 1; return GRID[id][y * MAPS[id].size + x]; }
   /* Who may stand on a cell at all. */
   function canEnter(kind, type) {
-    if (type === 'water') return kind === 'bear'; // only the Bear swims
     if (type === 'trap') return kind !== 'lion'; // the Lion is too wise to step into a trap
     return true;
   }
 
   function newGame(first, map) {
     map = mapId(map);
+    const n = sizeOf(map);
     const pieces = [];
     lineupOf(map).forEach((kind, i) => {
       pieces.push({ id: 'red-' + kind, team: 'red', kind, x: i, y: 0, alive: true, shield: false, trapped: 0, trapFresh: false });
-      pieces.push({ id: 'blue-' + kind, team: 'blue', kind, x: SIZE - 1 - i, y: SIZE - 1, alive: true, shield: false, trapped: 0, trapFresh: false });
+      pieces.push({ id: 'blue-' + kind, team: 'blue', kind, x: n - 1 - i, y: n - 1, alive: true, shield: false, trapped: 0, trapFresh: false });
     });
     return {
       map,
@@ -90,9 +101,9 @@
       face: null,
       stepsLeft: 0,
       choices: null, // { options: [{ pieceId, kind, targets }] } while the player picks where a bonus jump goes
-      runs: {}, // Bear / Panther: the direction their first step this turn locked in
+      runs: {}, // Panther: the direction its first step this turn locked in
       winner: null,
-      winReason: null // 'lion' | 'hare'
+      winReason: null // 'lion' | 'hare' | 'draw' (Map 2: only the two Lions left; winner stays null)
     };
   }
 
@@ -133,8 +144,7 @@
     const type = cellType(target.x, target.y, map);
     if (!canEnter(hunter.kind, type)) return false; // the hunter would have to step onto that cell
     if (target.kind === 'lion') return hunter.kind === 'lion'; // only a Lion catches a Lion; ends the game
-    if (target.kind === 'bear' && type === 'water') return false; // a swimming Bear is untouchable
-    if (target.kind !== 'hare' && target.kind !== 'squirrel') return hunter.kind === 'lion'; // Fox, Lynx, Bear, Panther
+    if (target.kind !== 'hare' && target.kind !== 'squirrel') return hunter.kind === 'lion'; // Fox, Lynx, Panther
     if (target.kind === 'squirrel' && type === 'tree') return hunter.kind === 'lynx' || hunter.kind === 'panther';
     return true;
   }
@@ -144,14 +154,15 @@
     const res = [];
     if (!p || !p.alive || p.trapped > 0) return res;
     const map = state.map;
-    const free = (x, y) => inside(x, y) && !pieceAt(state, x, y) && canEnter(p.kind, cellType(x, y, map));
+    const n = sizeOf(map);
+    const free = (x, y) => inside(x, y, n) && !pieceAt(state, x, y) && canEnter(p.kind, cellType(x, y, map));
     if (p.kind === 'hare') {
       const y = p.y + forward(p.team);
       if (free(p.x, y)) res.push({ x: p.x, y, capture: null });
       return res;
     }
     if (p.kind === 'squirrel') {
-      // L-shaped jump like a chess knight, over any animals, water and traps; it never catches.
+      // L-shaped jump like a chess knight, over any animals and traps; it never catches.
       for (const d of KNIGHT) {
         const x = p.x + d[0];
         const y = p.y + d[1];
@@ -163,7 +174,7 @@
     for (const d of run ? [run] : HUNT_DIRS[p.kind]) {
       const x = p.x + d[0];
       const y = p.y + d[1];
-      if (!inside(x, y) || !canEnter(p.kind, cellType(x, y, map))) continue;
+      if (!inside(x, y, n) || !canEnter(p.kind, cellType(x, y, map))) continue;
       const t = pieceAt(state, x, y);
       if (!t) res.push({ x, y, capture: null });
       else if (canCapture(p, t, map)) res.push({ x, y, capture: t });
@@ -180,7 +191,7 @@
     return res;
   }
 
-  /* Carrot / tree / water cells the animal may jump to: the nearest free one(s). */
+  /* Carrot / tree cells the animal may jump to: the nearest free one(s). */
   function bonusTargets(state, piece) {
     let best = Infinity;
     let res = [];
@@ -196,7 +207,8 @@
     return res;
   }
 
-  /* A teammate arriving next to a trapped animal (any of the 8 cells around it) frees it. */
+  /* A teammate arriving next to a trapped animal (any of the 8 cells around it) frees it.
+     Not called when the arriving animal lands in a trap itself: it rescues nobody. */
   function rescue(state, mover) {
     const freed = [];
     for (const q of state.pieces) {
@@ -210,18 +222,65 @@
     return freed;
   }
 
+  /*
+   * Trap face: the roller's animals (not the Lion, not already trapped) that stand nearest to a free trap,
+   * counted in steps in any direction, as the Lion walks. Each with its nearest free trap(s).
+   * A trap the animal itself stands on counts as free for it (distance 0).
+   */
+  function trapOptions(state) {
+    const traps = cellsOf(state.map, 'trap');
+    let best = Infinity;
+    let options = [];
+    for (const p of state.pieces) {
+      if (!p.alive || p.team !== state.turn || p.kind === 'lion' || p.trapped > 0) continue;
+      let pd = Infinity;
+      let targets = [];
+      for (const c of traps) {
+        const occupant = pieceAt(state, c[0], c[1]);
+        if (occupant && occupant !== p) continue;
+        const d = cheb(c[0], c[1], p.x, p.y);
+        if (d < pd) { pd = d; targets = [{ x: c[0], y: c[1] }]; }
+        else if (d === pd) targets.push({ x: c[0], y: c[1] });
+      }
+      if (!targets.length) continue;
+      if (pd < best) { best = pd; options = [{ pieceId: p.id, kind: p.kind, targets }]; }
+      else if (pd === best) options.push({ pieceId: p.id, kind: p.kind, targets });
+    }
+    return options;
+  }
+
+  function placeTrap(state, piece, x, y) {
+    const from = { x: piece.x, y: piece.y };
+    piece.x = x;
+    piece.y = y;
+    piece.trapped = TRAP_TURNS;
+    piece.trapFresh = true;
+    state.choices = null;
+    state.phase = 'end';
+    return {
+      type: 'trap', kind: piece.kind, pieceId: piece.id, from, to: { x, y },
+      stayed: from.x === x && from.y === y, win: null,
+      freed: [] // an animal that lands in a trap rescues nobody (your choice, 2026-11-24)
+    };
+  }
+
+  /* A chosen jump: into a trap on the trap face, otherwise to a carrot / tree. */
+  function place(state, piece, x, y) {
+    return state.face === 'trap' ? placeTrap(state, piece, x, y) : placeBonus(state, piece, x, y);
+  }
+
   function placeBonus(state, piece, x, y) {
     const from = { x: piece.x, y: piece.y };
     piece.x = x;
     piece.y = y;
-    if (piece.kind !== 'bear') piece.shield = true; // the Bear is safe in the water anyway
+    piece.shield = true;
     state.choices = null;
     state.phase = 'end';
     const out = {
       type: 'bonus', kind: piece.kind, pieceId: piece.id, from, to: { x, y },
       stayed: from.x === x && from.y === y, win: null, freed: rescue(state, piece)
     };
-    if (piece.kind === 'hare' && y === farRow(piece.team)) {
+    if (piece.kind === 'hare' && y === farRow(piece.team, state.map)) {
       state.winner = piece.team;
       state.winReason = 'hare';
       state.phase = 'over';
@@ -233,7 +292,8 @@
   function chooseOut(state, kind) {
     const options = state.choices.options;
     const one = options.length === 1 ? options[0] : null;
-    return { type: 'bonus-choose', kind: one ? one.kind : kind, options, pieceId: one ? one.pieceId : null, targets: one ? one.targets : [] };
+    const type = state.face === 'trap' ? 'trap-choose' : 'bonus-choose';
+    return { type, kind: one ? one.kind : kind, options, pieceId: one ? one.pieceId : null, targets: one ? one.targets : [] };
   }
 
   /* Apply a die face for the team whose turn it is. Returns what happened. */
@@ -250,9 +310,20 @@
       state.phase = 'end';
       return { type: 'rest' };
     }
+    if (face === 'trap') {
+      const options = trapOptions(state);
+      if (!options.length) { state.phase = 'end'; return { type: 'trap-none' }; } // nobody can go: like a rest
+      if (options.length === 1 && options[0].targets.length === 1) {
+        const o = options[0];
+        return placeTrap(state, getPiece(state, o.pieceId), o.targets[0].x, o.targets[0].y);
+      }
+      state.phase = 'choose';
+      state.choices = { options };
+      return chooseOut(state, 'trap');
+    }
     const kinds = BONUS_KINDS[face];
     if (kinds) {
-      const kind = face === 'food' ? 'food' : kinds[0];
+      const kind = kinds.length > 1 ? face : kinds[0];
       const options = [];
       let reason = 'caught';
       for (const k of kinds) {
@@ -282,21 +353,25 @@
     return { type: 'stars', steps };
   }
 
-  /* The player picked the cell for a bonus jump (one of several carrots / trees, or the water). */
-  function applyBonus(state, x, y) {
+  /*
+   * The player picked the cell for a jump (one of several carrots / trees / traps).
+   * pieceId says which animal goes; without it the cell must belong to one animal only
+   * (on a trap tie several animals share the same trap: then the animal has to be named).
+   */
+  function applyBonus(state, x, y, pieceId) {
     if (state.phase !== 'choose' || !state.choices) return null;
-    for (const o of state.choices.options) {
-      if (o.targets.some((t) => t.x === x && t.y === y)) return placeBonus(state, getPiece(state, o.pieceId), x, y);
-    }
-    return null;
+    const hits = state.choices.options.filter((o) =>
+      (!pieceId || o.pieceId === pieceId) && o.targets.some((t) => t.x === x && t.y === y));
+    if (hits.length !== 1) return null;
+    return place(state, getPiece(state, hits[0].pieceId), x, y);
   }
 
-  /* The player tapped the animal instead of a cell (Carrot / Fish face: the Hare or the Bear). */
+  /* The player tapped the animal instead of a cell (Carrot/Tree face: the Hare or the Squirrel; trap face: a tie). */
   function chooseBonusPiece(state, pieceId) {
     if (state.phase !== 'choose' || !state.choices) return null;
     const o = state.choices.options.find((op) => op.pieceId === pieceId);
     if (!o) return null;
-    if (o.targets.length === 1) return placeBonus(state, getPiece(state, pieceId), o.targets[0].x, o.targets[0].y);
+    if (o.targets.length === 1) return place(state, getPiece(state, pieceId), o.targets[0].x, o.targets[0].y);
     if (state.choices.options.length === 1) return null; // this animal is already chosen: now pick a cell
     state.choices = { options: [o] };
     return chooseOut(state, o.kind);
@@ -320,13 +395,16 @@
     if (RUNNERS[p.kind] && !state.runs[p.id]) state.runs[p.id] = [x - from.x, y - from.y];
     const intoTrap = cellType(x, y, state.map) === 'trap';
     if (intoTrap) { p.trapped = TRAP_TURNS; p.trapFresh = true; }
-    const freed = rescue(state, p);
+    const freed = intoTrap ? [] : rescue(state, p); // an animal that lands in a trap rescues nobody
 
     const ev = { piece: p, from, to: { x, y }, captured: captured || null, win: null, turnOver: false, reason: null, trapped: intoTrap, freed };
     if (captured && captured.kind === 'lion') { state.winner = p.team; state.winReason = 'lion'; }
-    else if (p.kind === 'hare' && y === farRow(p.team)) { state.winner = p.team; state.winReason = 'hare'; }
+    else if (p.kind === 'hare' && y === farRow(p.team, state.map)) { state.winner = p.team; state.winReason = 'hare'; }
+    else if (captured && MAPS[state.map].lionsDraw && state.pieces.every((q) => !q.alive || q.kind === 'lion')) {
+      state.winReason = 'draw'; // nobody wins: winner stays null
+    }
 
-    if (state.winner) {
+    if (state.winner || state.winReason === 'draw') {
       state.phase = 'over';
       state.stepsLeft = 0;
       ev.win = state.winReason;
@@ -364,6 +442,14 @@
   /* The turn timer ran out: the turn is lost; steps already made stay. */
   function timeOut(state) {
     if (state.phase !== 'roll' && state.phase !== 'move' && state.phase !== 'choose') return false;
+    // A tie on the trap face can't be dodged by waiting: one of the tied animals falls in at random.
+    // Returns that trap event instead of true.
+    if (state.phase === 'choose' && state.face === 'trap') {
+      const all = [];
+      for (const o of state.choices.options) for (const tg of o.targets) all.push({ pieceId: o.pieceId, x: tg.x, y: tg.y });
+      const c = all[Math.floor(Math.random() * all.length)];
+      return Object.assign(applyBonus(state, c.x, c.y, c.pieceId), { timedOut: true });
+    }
     // The die wasn't rolled, but the turn still counts: this team's protection ends as if it had rolled.
     if (state.phase === 'roll') for (const p of state.pieces) if (p.team === state.turn) p.shield = false;
     state.stepsLeft = 0;
@@ -397,7 +483,7 @@
   /* Computer opponent                                                   */
   /* ------------------------------------------------------------------ */
 
-  const VALUE = { hare: 70, squirrel: 25, fox: 45, lynx: 50, bear: 55, panther: 60, lion: 0 };
+  const VALUE = { hare: 70, squirrel: 25, fox: 45, lynx: 50, panther: 60, lion: 0 };
   // Chance that the next roll gives at least k steps (k = 1..3).
   const ROLL_CHANCE = [0, 3 / 6, 2 / 6, 1 / 6];
   function chance(k) { return k >= 1 && k <= 3 ? ROLL_CHANCE[k] : 0; }
@@ -407,14 +493,15 @@
   /*
    * For one predator: the fewest steps (1..3) to step onto each cell,
    * walking only through empty cells it may enter. Other animals are assumed to stay put.
-   * A trap ends the walk; Bear and Panther only run in straight lines.
+   * A trap ends the walk; the Panther only runs in straight lines.
    */
   function reachMap(occupied, hunter, map) {
-    const dist = new Uint8Array(SIZE * SIZE).fill(FAR);
+    const N = sizeOf(map);
+    const dist = new Uint8Array(N * N).fill(FAR);
     const dirs = HUNT_DIRS[hunter.kind];
-    const ok = (x, y) => inside(x, y) && canEnter(hunter.kind, cellType(x, y, map));
+    const ok = (x, y) => inside(x, y, N) && canEnter(hunter.kind, cellType(x, y, map));
     const stops = (x, y, k) => occupied[k] || cellType(x, y, map) === 'trap';
-    dist[hunter.y * SIZE + hunter.x] = 0;
+    dist[hunter.y * N + hunter.x] = 0;
     if (RUNNERS[hunter.kind]) {
       for (const d of dirs) {
         let x = hunter.x;
@@ -423,24 +510,24 @@
           x += d[0];
           y += d[1];
           if (!ok(x, y)) break;
-          const k = y * SIZE + x;
+          const k = y * N + x;
           if (n < dist[k]) dist[k] = n;
           if (stops(x, y, k)) break;
         }
       }
       return dist;
     }
-    let frontier = [hunter.y * SIZE + hunter.x];
+    let frontier = [hunter.y * N + hunter.x];
     for (let depth = 1; depth <= 3 && frontier.length; depth++) {
       const next = [];
       for (const c of frontier) {
-        const cx = c % SIZE;
-        const cy = (c - cx) / SIZE;
+        const cx = c % N;
+        const cy = (c - cx) / N;
         for (const d of dirs) {
           const x = cx + d[0];
           const y = cy + d[1];
           if (!ok(x, y)) continue;
-          const k = y * SIZE + x;
+          const k = y * N + x;
           if (dist[k] <= depth) continue;
           dist[k] = depth;
           if (!stops(x, y, k)) next.push(k);
@@ -456,20 +543,22 @@
     const foe = other(me);
     const easy = level === 'easy';
     const map = state.map;
+    const N = sizeOf(map);
     if (state.winner === me) return easy ? 250 : 1e6;
     if (state.winner === foe) return -1e6;
+    if (state.winReason === 'draw') return 0;
 
     // Still stuck in a trap on that team's next turn?
     const stuckNext = (p) => p.trapped > 0 && (p.team !== state.turn || p.trapped - (p.trapFresh ? 0 : 1) > 0);
-    const occupied = new Uint8Array(SIZE * SIZE);
-    for (const p of state.pieces) if (p.alive) occupied[p.y * SIZE + p.x] = 1;
+    const occupied = new Uint8Array(N * N);
+    for (const p of state.pieces) if (p.alive) occupied[p.y * N + p.x] = 1;
     const hunters = [];
     for (const p of state.pieces) if (p.alive && isPredator(p) && !stuckNext(p)) hunters.push({ piece: p, map: reachMap(occupied, p, map) });
 
     // Fewest steps for any enemy predator to catch this animal.
     function danger(prey) {
       let k = FAR;
-      const cell = prey.y * SIZE + prey.x;
+      const cell = prey.y * N + prey.x;
       for (const h of hunters) {
         if (h.piece.team !== prey.team && h.map[cell] < k && canCapture(h.piece, prey, map)) k = h.map[cell];
       }
@@ -485,9 +574,9 @@
         const f = forward(team);
         let n = 0;
         let free = true;
-        for (let y = hare.y + f; y >= 0 && y < SIZE; y += f) {
+        for (let y = hare.y + f; y >= 0 && y < N; y += f) {
           const type = cellType(hare.x, y, map);
-          if (occupied[y * SIZE + hare.x] || type === 'water' || type === 'trap') { free = false; break; }
+          if (occupied[y * N + hare.x] || type === 'trap') { free = false; break; }
           n++;
         }
         if (free && n < k) k = n;
@@ -502,7 +591,7 @@
       const mine = p.team === me;
       score += (mine ? 1 : -1) * VALUE[p.kind];
       if (p.kind === 'hare') {
-        const progress = p.team === 'red' ? p.y : SIZE - 1 - p.y;
+        const progress = p.team === 'red' ? p.y : N - 1 - p.y;
         score += (mine ? 1 : -1) * progress * 12;
       }
       if (p.trapped > 0) score += (mine ? -1 : 1) * 9 * p.trapped; // an animal in a trap can't help
@@ -518,8 +607,9 @@
   }
 
   function positionKey(s) {
+    const N = sizeOf(s.map);
     let key = s.stepsLeft + s.phase.charAt(0);
-    for (const p of s.pieces) key += p.alive ? String.fromCharCode(65 + p.y * SIZE + p.x) + (p.trapped > 0 ? p.trapped : '') : '-';
+    for (const p of s.pieces) key += p.alive ? String.fromCharCode(65 + p.y * N + p.x) + (p.trapped > 0 ? p.trapped : '') : '-';
     for (const id in s.runs) key += id + s.runs[id].join(',');
     return key;
   }
@@ -570,26 +660,26 @@
     return best ? best.seq : [];
   }
 
-  /* Where to send the bonus jump: returns the chosen cell { x, y }. */
+  /* Where to send the jump (carrot / tree, or which tied animal goes into which trap): returns the chosen cell { x, y }. */
   function aiChooseBonus(state, level) {
     let best = null;
     let bestScore = -Infinity;
     for (const o of state.choices.options) {
       for (const t of o.targets) {
         const s2 = clone(state);
-        applyBonus(s2, t.x, t.y);
+        applyBonus(s2, t.x, t.y, o.pieceId);
         const score = evaluate(s2, state.turn, level);
-        if (score > bestScore) { bestScore = score; best = t; }
+        if (score > bestScore) { bestScore = score; best = { pieceId: o.pieceId, x: t.x, y: t.y }; }
       }
     }
-    return best;
+    return best; // { pieceId, x, y }: pass all three to applyBonus
   }
 
   root.Forest = {
     SIZE, MAPS, FACES, LINEUP, CARROT_CELLS, TREE_CELLS, TRAP_TURNS,
-    other, forward, farRow, cellType, cellsOf, facesOf, lineupOf, canEnter, isPredator,
+    other, forward, farRow, sizeOf, cellType, cellsOf, facesOf, lineupOf, canEnter, isPredator, setCells,
     newGame, clone, pieceAt, getPiece, findPiece,
-    canCapture, stepMoves, allMoves, bonusTargets,
+    canCapture, stepMoves, allMoves, bonusTargets, trapOptions,
     beginRoll, applyBonus, chooseBonusPiece, step, endTurnEarly, timeOut, nextTurn, rollDie,
     evaluate, aiPlan, aiChooseBonus
   };

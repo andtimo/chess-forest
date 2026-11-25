@@ -13,21 +13,20 @@
     lion: { nom: 'Лев', acc: 'Льва', fem: false },
     lynx: { nom: 'Рысь', acc: 'Рысь', fem: true },
     squirrel: { nom: 'Белочка', acc: 'Белочку', fem: true },
-    bear: { nom: 'Медведь', acc: 'Медведя', fem: false },
     panther: { nom: 'Пантера', acc: 'Пантеру', fem: true }
   };
-  const RU_SHEET = { lion: 'Лев', hare: 'Заяц', squirrel: 'Белка', fox: 'Лиса', lynx: 'Рысь', panther: 'Пантера', bear: 'Медведь' };
+  const RU_SHEET = { lion: 'Лев', hare: 'Заяц', squirrel: 'Белка', fox: 'Лиса', lynx: 'Рысь', panther: 'Пантера' };
   const RU_PIECE = { king: 'Король', pawn: 'Пешка', knight: 'Конь', bishop: 'Слон', rook: 'Ладья', queen: 'Ферзь' };
   // Tap hint under the cheat sheet: how the animal moves.
   const RU_HINT = {
     lion: 'ходит на 1 клетку в любую сторону', hare: 'бежит только вперёд', squirrel: 'прыгает буквой «Г» через зверей',
     fox: 'ходит наискосок', lynx: 'ходит прямо: вперёд, назад и вбок',
-    panther: 'бежит по прямой в любую сторону на 1–3 клетки', bear: 'бежит по прямой вперёд, назад или вбок на 1–3 клетки'
+    panther: 'бежит по прямой в любую сторону на 1–3 клетки'
   };
   const ruStars = (n) => (n === 1 ? 'Выпала 1 звёздочка' : 'Выпало ' + n + ' звёздочки');
   const ruSteps = (n) => (n === 1 ? '1 шаг' : n + ' шага');
   const ruLeft = (n) => (n === 1 ? 'Остался ' : 'Осталось ') + ruSteps(n) + '.';
-  const ruCell = { carrot: ', морковка', tree: ', дерево', water: ', вода', trap: ', капкан' };
+  const ruCell = { carrot: ', морковка', tree: ', дерево', trap: ', капкан' };
 
   const ru = {
     'doc.title': 'Шахматный лес',
@@ -42,7 +41,7 @@
     'intro.p1.html': '<b>Наглядно-образное мышление:</b> Каждый зверь повторяет траекторию реальной шахматной фигуры:',
     'pair': (a, p) => '<b>' + RU_SHEET[a] + '</b> — ' + RU_PIECE[p],
     'intro.p2.html': '<b>Понимание геометрии доски:</b> Ребёнок учится видеть прямые линии, диагонали и клетки безопасности без скучной зубрёжки.',
-    'intro.p3.html': '<b>Стратегию и логику:</b> Поле 5×5 тренирует концентрацию внимания, умение просчитывать шаги вперёд и защищать свои фигуры.',
+    'intro.p3.html': '<b>Стратегию и логику:</b> Поля 5×5 и 6×6 тренируют концентрацию внимания, умение просчитывать шаги вперёд и защищать свои фигуры.',
     'intro.maps': 'Играйте с малышами на Карте 1, а с детьми от 4 лет и старше — покоряйте тактическую Карту 2!',
     'intro.go': 'ПЕРЕЙТИ В ИГРУ',
     'intro.skip': 'Больше не показывать при входе',
@@ -116,18 +115,22 @@
     'rules.hunt2': 'Поймал зверя, и ход закончился.',
     'rules.hunt3': 'Перепрыгивать через других зверей умеет только Белочка.',
     'rules.hunt4': 'Чужого Льва может поймать только Лев.',
-    // Map 2 «Глубокий лес». The Panther, Bear, trap and Carrot / Fish texts are the author's, word for word.
+    // Map 2 «Глубокий лес» (6x6). The Panther and trap texts are the author's, word for word
+    // (only «но боится воды» was dropped: there is no water on the 6x6 map; OK'd 2026-11-24).
     'rules.map1': 'Карта 1: «Солнечная поляна» (2–4 года)',
     'rules.map2': 'Карта 2: «Глубокий Лес» (Уровень 4+ лет)',
-    'rules.m.panther.html': '<b>Пантера (= Ферзь):</b> Самая быстрая хищница. Ходит во все стороны (прямо и наискосок) на 1, 2 или 3 клетки. Умеет лазить на Дерево за Белкой, но боится воды.',
-    'rules.m.bear.html': '<b>Медведь (= Ладья):</b> Могучий хозяин леса. Ходит строго по прямым линиям на 1, 2 или 3 клетки. Единственный умеет плавать: на клетке с Водой и Рыбой он становится неприкасаемым.',
+    'rules.draw.html': '<b>Ничья.</b> Если на поле остались только два Льва, игра заканчивается вничью.',
+    'rules.carrottree.html': '<b>Морковка или Дерево:</b> выберите сами — Зайчика на Морковку или Белочку на Дерево.',
+    'rules.trapface.html': '<b>Капкан:</b> в капкан попадает тот ваш зверь, который ближе всех к свободному капкану (кроме Льва). Если таких несколько — выбираете вы.',
+    'rules.bonusNote': 'Пока соперник делает свой ход, Зайчика на морковке и Белочку с орешком поймать нельзя.',
+    'rules.m.lynx2.html': '<b>Рысь</b> идёт на одну клетку прямо: вперёд, назад или вбок. Ловит Зайчика и Белочку.',
+    'rules.m.panther.html': '<b>Пантера (= Ферзь):</b> Самая быстрая хищница. Ходит во все стороны (прямо и наискосок) на 1, 2 или 3 клетки. Умеет лазить на Дерево за Белкой.',
     'rules.trap.html': '<b>Капкан:</b> Опасная клетка. Если зверь наступит на неё, он пропускает 2 хода (Лев слишком мудр и не может наступить в капкан, а Белка может его перепрыгнуть). Чтобы спасти друга быстрее, подойдите любым своим зверем на соседнюю клетку.',
-    'rules.food.html': '<b>Новая грань кубика (Морковь / Рыба):</b> Выберите сами, кого отправить за едой — Зайца на Морковку или Медведя в Реку за Рыбой.',
-    'rules.run': 'Пантера и Медведь тратят по звёздочке на каждую клетку и за один ход бегут только по одной прямой, не сворачивая.',
+    'rules.run': 'Пантера тратит по звёздочке на каждую клетку и за один ход бежит только по одной прямой, не сворачивая.',
     'rules.h.cells': 'Особые клетки',
-    'rules.water.html': '<b>Вода.</b> Сюда заходит только Медведь. Белочка может воду перепрыгнуть, а остальные звери её обходят.',
-    'rules.hunt5': 'Пантера и Медведь ловят Зайчика и Белочку, а их самих может поймать только Лев.',
+    'rules.hunt5': 'Белочку на дереве (без орешка) могут поймать только Рысь и Пантера.',
     'rules.hunt6': 'Зверя в капкане тоже можно поймать, но охотник сам попадёт в капкан.',
+    'rules.hunt7': 'Лисичку, Рысь и Пантеру может поймать только Лев.',
 
     'label': (team, kind) => {
       const fem = RU_ANIMAL[kind].fem;
@@ -141,7 +144,7 @@
     'turnTeam': (team) => 'Ход ' + (team === 'red' ? 'красных' : 'синих') + '. Брось кубик!',
     'rest': 'Ой, звери решили отдохнуть! Ход пропускается.',
     'noBonus': (kind, reason) => {
-      if (kind === 'food') return 'Морковь / Рыба! Но ни Зайчик, ни Медведь сейчас не могут пойти за едой. Ход пропускается.';
+      if (kind === 'carrottree') return 'Морковка или Дерево! Но ни Зайчик, ни Белочка сейчас не могут прыгнуть. Ход пропускается.';
       if (kind === 'hare') {
         return reason === 'caught'
           ? 'Морковка! Но Зайчик уже отдыхает в домике. Ход пропускается.'
@@ -155,13 +158,23 @@
     'noMoves': (n) => ruStars(n) + ', но ходить некуда. Ход пропускается.',
     'chooseCarrot': 'Морковка! Выбери, к какой морковке прыгнет Зайчик.',
     'chooseTree': 'Дерево! Выбери, на какое дерево прыгнет Белочка.',
-    'chooseFood': 'Морковь / Рыба! Кто пойдёт за едой? Нажми на Зайчика или на Медведя.',
+    'chooseCarrotTree': 'Морковка или Дерево! Кто прыгнет? Нажми на Зайчика или на Белочку.',
     'rolledCpu': (n) => ruStars(n) + '. Компьютер ходит…',
     'rolledYou': (n) => ruStars(n) + '. Выбери зверя и сделай ' + ruSteps(n) + '.',
     'bonusHare': 'Морковка! Зайчик кушает, и его нельзя поймать.',
     'bonusSquirrel': 'Дерево! Белочка грызёт орешек, и её не достать.',
-    'bonusBear': 'Рыба! Медведь прыгает в воду за рыбой. В воде его никто не поймает.',
-    'bonusBearStay': 'Рыба! Медведь остаётся в воде и ловит рыбу.',
+    // Map 2 trap face
+    'trapFace': (k) => {
+      const a = RU_ANIMAL[k];
+      return 'Капкан! ' + a.nom + (a.fem ? ' была ближе всех и попалась' : ' был ближе всех и попался') + ': пропустит 2 хода.';
+    },
+    'trapFaceAgain': (k) => {
+      const a = RU_ANIMAL[k];
+      return 'Капкан! ' + a.nom + (a.fem ? ' всё ещё стояла в капкане и снова попалась' : ' всё ещё стоял в капкане и снова попался') + ': пропустит 2 хода.';
+    },
+    'trapChooseAnimal': 'Капкан! Несколько зверей одинаково близко. Выбери, кто попадёт в капкан.',
+    'trapChooseCell': (k) => 'Капкан! Выбери, в какой капкан попадёт ' + RU_ANIMAL[k].nom + '.',
+    'trapNone': 'Капкан! Но попасть в капкан некому. Ход пропускается.',
     'inTrap': (k) => {
       const a = RU_ANIMAL[k];
       return a.nom + (a.fem ? ' попала' : ' попал') + ' в капкан и пропустит 2 хода. Спаси ' + (a.fem ? 'её' : 'его') +
@@ -190,7 +203,9 @@
     'winHareText': 'Зайчик пробежал весь лес и спасся!',
     'winTeam': (team) => (team === 'red' ? 'Победили красные!' : 'Победили синие!'),
     'winCpu': 'Победил компьютер. В следующий раз получится!',
-    'winYou': 'Ты победил!'
+    'winYou': 'Ты победил!',
+    'winDrawTitle': 'Ничья!',
+    'winDrawText': 'Львы подружились — победила дружба.'
   };
 
   /* ---------------- Slovenčina ---------------- */
@@ -200,20 +215,19 @@
     lion: { nom: 'Lev', acc: 'Leva', fem: false },
     lynx: { nom: 'Rys', acc: 'Rysa', fem: false },
     squirrel: { nom: 'Veverička', acc: 'Veveričku', fem: true },
-    bear: { nom: 'Medveď', acc: 'Medveďa', fem: false },
     panther: { nom: 'Panter', acc: 'Pantera', fem: false }
   };
-  const SK_SHEET = { lion: 'Lev', hare: 'Zajac', squirrel: 'Veverička', fox: 'Líška', lynx: 'Rys', panther: 'Panter', bear: 'Medveď' };
+  const SK_SHEET = { lion: 'Lev', hare: 'Zajac', squirrel: 'Veverička', fox: 'Líška', lynx: 'Rys', panther: 'Panter' };
   const SK_PIECE = { king: 'Kráľ', pawn: 'Pešiak', knight: 'Jazdec', bishop: 'Strelec', rook: 'Veža', queen: 'Dáma' };
   const SK_HINT = {
     lion: 'chodí o 1 políčko ľubovoľným smerom', hare: 'beží iba dopredu', squirrel: 'skáče do tvaru „L“ ponad zvieratká',
     fox: 'chodí šikmo', lynx: 'chodí rovno: dopredu, dozadu a nabok',
-    panther: 'beží rovno ľubovoľným smerom o 1–3 políčka', bear: 'beží rovno dopredu, dozadu alebo nabok o 1–3 políčka'
+    panther: 'beží rovno ľubovoľným smerom o 1–3 políčka'
   };
   const skStars = (n) => (n === 1 ? 'Padla 1 hviezdička' : 'Padli ' + n + ' hviezdičky');
   const skSteps = (n) => (n === 1 ? '1 krok' : n + ' kroky');
   const skLeft = (n) => (n === 1 ? 'Zostal 1 krok.' : 'Zostali ' + n + ' kroky.');
-  const skCell = { carrot: ', mrkva', tree: ', strom', water: ', voda', trap: ', pasca' };
+  const skCell = { carrot: ', mrkva', tree: ', strom', trap: ', pasca' };
 
   const sk = {
     'doc.title': 'Šachový les',
@@ -228,7 +242,7 @@
     'intro.p1.html': '<b>Názorno-obrazné myslenie:</b> Každé zvieratko opakuje dráhu skutočnej šachovej figúrky:',
     'pair': (a, p) => '<b>' + SK_SHEET[a] + '</b> — ' + SK_PIECE[p],
     'intro.p2.html': '<b>Pochopenie geometrie šachovnice:</b> Dieťa sa učí vidieť priame línie, uhlopriečky a bezpečné políčka bez nudného biflovania.',
-    'intro.p3.html': '<b>Stratégiu a logiku:</b> Pole 5×5 trénuje sústredenie, schopnosť premyslieť si kroky dopredu a chrániť svoje figúrky.',
+    'intro.p3.html': '<b>Stratégiu a logiku:</b> Polia 5×5 a 6×6 trénujú sústredenie, schopnosť premyslieť si kroky dopredu a chrániť svoje figúrky.',
     'intro.maps': 'S najmenšími sa hrajte na Mape 1 a s deťmi od 4 rokov dobývajte taktickú Mapu 2!',
     'intro.go': 'PREJSŤ DO HRY',
     'intro.skip': 'Pri vstupe už nezobrazovať',
@@ -304,15 +318,18 @@
     'rules.hunt4': 'Súperovho Leva môže chytiť iba Lev.',
     'rules.map1': 'Mapa 1: „Slnečná čistinka“ (2–4 roky)',
     'rules.map2': 'Mapa 2: „Hlboký les“ (Úroveň 4+ roky)',
-    'rules.m.panther.html': '<b>Panter (= Dáma):</b> Najrýchlejší predátor. Chodí všetkými smermi (rovno aj šikmo) o 1, 2 alebo 3 polia. Vie liezť na Strom za Veveričkou, ale bojí sa vody.',
-    'rules.m.bear.html': '<b>Medveď (= Veža):</b> Mocný pán lesa. Chodí striktne po priamych líniách o 1, 2 alebo 3 polia. Ako jediný vie plávať: na poli s Vodou a Rybou sa stáva nedotknuteľným.',
+    'rules.draw.html': '<b>Remíza.</b> Ak na poli zostali iba dva Levy, hra končí remízou.',
+    'rules.carrottree.html': '<b>Mrkva alebo Strom:</b> vyberte si sami — Zajačika na Mrkvu alebo Veveričku na Strom.',
+    'rules.trapface.html': '<b>Pasca:</b> do pasce sa chytí to vaše zvieratko, ktoré je najbližšie k voľnej pasci (okrem Leva). Ak je takých viac, vyberáte vy.',
+    'rules.bonusNote': 'Kým súper robí svoj ťah, Zajačika na mrkve ani Veveričku s orieškom nemožno chytiť.',
+    'rules.m.lynx2.html': '<b>Rys</b> prejde o jedno políčko rovno: dopredu, dozadu alebo nabok. Chytá Zajačika a Veveričku.',
+    'rules.m.panther.html': '<b>Panter (= Dáma):</b> Najrýchlejší predátor. Chodí všetkými smermi (rovno aj šikmo) o 1, 2 alebo 3 polia. Vie liezť na Strom za Veveričkou.',
     'rules.trap.html': '<b>Pasca:</b> Nebezpečné pole. Ak naň zvieratko stúpi, vynechá 2 ťahy (Lev je príliš múdry a do pasce nestúpi, Veverička ju dokáže preskočiť). Ak chcete kamaráta zachrániť skôr, príďte s akýmkoľvek svojím zvieratkom na susedné pole.',
-    'rules.food.html': '<b>Nová strana kocky (Mrkva / Ryba):</b> Vyberte si sami, koho pošlete za jedlom — Zajačika na Mrkvu alebo Medveďa do Rieky za Rybou.',
-    'rules.run': 'Panter a Medveď minú na každé políčko jednu hviezdičku a počas jedného ťahu bežia iba po jednej priamke, bez zatáčania.',
+    'rules.run': 'Panter minie na každé políčko jednu hviezdičku a počas jedného ťahu beží iba po jednej priamke, bez zatáčania.',
     'rules.h.cells': 'Zvláštne políčka',
-    'rules.water.html': '<b>Voda.</b> Sem vstúpi iba Medveď. Veverička ju môže preskočiť, ostatné zvieratká ju obchádzajú.',
-    'rules.hunt5': 'Panter a Medveď chytajú Zajačika a Veveričku, ich samých môže chytiť iba Lev.',
+    'rules.hunt5': 'Veveričku na strome (bez orieška) môžu chytiť iba Rys a Panter.',
     'rules.hunt6': 'Aj zvieratko v pasci sa dá chytiť, ale lovec sa potom sám chytí do pasce.',
+    'rules.hunt7': 'Líšku, Rysa a Pantera môže chytiť iba Lev.',
 
     'label': (team, kind) => {
       const fem = SK_ANIMAL[kind].fem;
@@ -326,7 +343,7 @@
     'turnTeam': (team) => 'Ťahajú ' + (team === 'red' ? 'červení' : 'modrí') + '. Hoď kockou!',
     'rest': 'Ojoj, zvieratká si išli oddýchnuť! Ťah sa vynecháva.',
     'noBonus': (kind, reason) => {
-      if (kind === 'food') return 'Mrkva / Ryba! Ale ani Zajačik, ani Medveď teraz nemôžu ísť po jedlo. Ťah sa vynecháva.';
+      if (kind === 'carrottree') return 'Mrkva alebo Strom! Ale ani Zajačik, ani Veverička teraz nemôžu skočiť. Ťah sa vynecháva.';
       if (kind === 'hare') {
         return reason === 'caught'
           ? 'Mrkva! Ale Zajačik už oddychuje v domčeku. Ťah sa vynecháva.'
@@ -340,13 +357,22 @@
     'noMoves': (n) => skStars(n) + ', ale nie je kam ísť. Ťah sa vynecháva.',
     'chooseCarrot': 'Mrkva! Vyber, ku ktorej mrkve skočí Zajačik.',
     'chooseTree': 'Strom! Vyber, na ktorý strom vyskočí Veverička.',
-    'chooseFood': 'Mrkva / Ryba! Kto pôjde po jedlo? Ťukni na Zajačika alebo na Medveďa.',
+    'chooseCarrotTree': 'Mrkva alebo Strom! Kto skočí? Ťukni na Zajačika alebo na Veveričku.',
     'rolledCpu': (n) => skStars(n) + '. Počítač ťahá…',
     'rolledYou': (n) => skStars(n) + '. Vyber zvieratko a urob ' + skSteps(n) + '.',
     'bonusHare': 'Mrkva! Zajačik papá a nikto ho nemôže chytiť.',
     'bonusSquirrel': 'Strom! Veverička hryzie oriešok a nikto ju nedostane.',
-    'bonusBear': 'Ryba! Medveď skáče do vody za rybou. Vo vode ho nikto nechytí.',
-    'bonusBearStay': 'Ryba! Medveď zostáva vo vode a chytá ryby.',
+    'trapFace': (k) => {
+      const a = SK_ANIMAL[k];
+      return 'Pasca! ' + a.nom + (a.fem ? ' bola najbližšie a chytila sa' : ' bol najbližšie a chytil sa') + ': vynechá 2 ťahy.';
+    },
+    'trapFaceAgain': (k) => {
+      const a = SK_ANIMAL[k];
+      return 'Pasca! ' + a.nom + (a.fem ? ' ešte stála v pasci a znova sa chytila' : ' ešte stál v pasci a znova sa chytil') + ': vynechá 2 ťahy.';
+    },
+    'trapChooseAnimal': 'Pasca! Viac zvieratiek je rovnako blízko. Vyber, ktoré sa chytí do pasce.',
+    'trapChooseCell': (k) => 'Pasca! Vyber, do ktorej pasce sa chytí ' + SK_ANIMAL[k].nom + '.',
+    'trapNone': 'Pasca! Ale do pasce sa nemá kto chytiť. Ťah sa vynecháva.',
     'inTrap': (k) => {
       const a = SK_ANIMAL[k];
       return a.nom + (a.fem ? ' sa chytila' : ' sa chytil') + ' do pasce a vynechá 2 ťahy. Zachráň ' + (a.fem ? 'ju' : 'ho') +
@@ -375,22 +401,24 @@
     'winHareText': 'Zajačik prebehol celý les a zachránil sa!',
     'winTeam': (team) => (team === 'red' ? 'Vyhrali červení!' : 'Vyhrali modrí!'),
     'winCpu': 'Vyhral počítač. Nabudúce to vyjde!',
-    'winYou': 'Vyhral si!'
+    'winYou': 'Vyhral si!',
+    'winDrawTitle': 'Remíza!',
+    'winDrawText': 'Levy sa spriatelili — vyhralo priateľstvo.'
   };
 
   /* ---------------- English ---------------- */
-  const EN_ANIMAL = { hare: 'Bunny', fox: 'Fox', lion: 'Lion', lynx: 'Lynx', squirrel: 'Squirrel', bear: 'Bear', panther: 'Panther' };
-  const EN_SHEET = { lion: 'Lion', hare: 'Bunny', squirrel: 'Squirrel', fox: 'Fox', lynx: 'Lynx', panther: 'Panther', bear: 'Bear' };
+  const EN_ANIMAL = { hare: 'Bunny', fox: 'Fox', lion: 'Lion', lynx: 'Lynx', squirrel: 'Squirrel', panther: 'Panther' };
+  const EN_SHEET = { lion: 'Lion', hare: 'Bunny', squirrel: 'Squirrel', fox: 'Fox', lynx: 'Lynx', panther: 'Panther' };
   const EN_PIECE = { king: 'King', pawn: 'Pawn', knight: 'Knight', bishop: 'Bishop', rook: 'Rook', queen: 'Queen' };
   const EN_HINT = {
     lion: 'moves 1 square in any direction', hare: 'runs forward only', squirrel: 'jumps in an “L” over animals',
     fox: 'moves diagonally', lynx: 'moves straight: forward, back and sideways',
-    panther: 'runs straight in any direction, 1–3 squares', bear: 'runs straight forward, back or sideways, 1–3 squares'
+    panther: 'runs straight in any direction, 1–3 squares'
   };
   const enStars = (n) => (n === 1 ? '1 star' : n + ' stars');
   const enSteps = (n) => (n === 1 ? '1 step' : n + ' steps');
   const enLeft = (n) => enSteps(n) + ' left.';
-  const enCell = { carrot: ', carrot', tree: ', tree', water: ', water', trap: ', trap' };
+  const enCell = { carrot: ', carrot', tree: ', tree', trap: ', trap' };
 
   const en = {
     'doc.title': 'Chess Forest',
@@ -405,7 +433,7 @@
     'intro.p1.html': '<b>Visual thinking:</b> Every animal follows the path of a real chess piece:',
     'pair': (a, p) => '<b>' + EN_SHEET[a] + '</b> — ' + EN_PIECE[p],
     'intro.p2.html': '<b>Understanding the board:</b> The child learns to see straight lines, diagonals and safe squares without boring memorisation.',
-    'intro.p3.html': '<b>Strategy and logic:</b> The 5×5 board trains concentration, thinking steps ahead and protecting your own pieces.',
+    'intro.p3.html': '<b>Strategy and logic:</b> The 5×5 and 6×6 boards train concentration, thinking steps ahead and protecting your own pieces.',
     'intro.maps': 'Play Map 1 with toddlers, and take on the tactical Map 2 with children aged 4 and older!',
     'intro.go': 'GO TO THE GAME',
     'intro.skip': 'Don’t show this at start again',
@@ -481,15 +509,18 @@
     'rules.hunt4': 'Only a Lion can catch the other team’s Lion.',
     'rules.map1': 'Map 1: "Sunny Glade" (2–4 yrs)',
     'rules.map2': 'Map 2: "Deep Forest" (Level 4+ yrs)',
-    'rules.m.panther.html': '<b>Panther (= Queen):</b> The fastest predator. Moves in all directions (straight and diagonally) by 1, 2, or 3 squares. Can climb the Tree to catch the Squirrel, but avoids water.',
-    'rules.m.bear.html': '<b>Bear (= Rook):</b> Mighty ruler of the forest. Moves strictly in straight lines by 1, 2, or 3 squares. The only animal that can swim: on the Water &amp; Fish square, the Bear becomes untouchable.',
+    'rules.draw.html': '<b>Draw.</b> If only the two Lions are left on the board, the game ends in a draw.',
+    'rules.carrottree.html': '<b>Carrot or Tree:</b> you choose — send the Bunny to a Carrot or the Squirrel to a Tree.',
+    'rules.trapface.html': '<b>Trap:</b> the one of your animals that is closest to a free trap falls into it (not the Lion). If several are equally close, you choose.',
+    'rules.bonusNote': 'While the other side takes its turn, the Bunny on a carrot and the Squirrel with a nut can’t be caught.',
+    'rules.m.lynx2.html': '<b>Lynx</b> moves one square straight: forward, back or sideways. Catches the Bunny and the Squirrel.',
+    'rules.m.panther.html': '<b>Panther (= Queen):</b> The fastest predator. Moves in all directions (straight and diagonally) by 1, 2, or 3 squares. Can climb the Tree to catch the Squirrel.',
     'rules.trap.html': '<b>Trap:</b> A dangerous square. Any animal stepping on it misses 2 turns (the Lion is too wise to step into a trap, and the Squirrel can jump over it). To rescue a trapped friend early, move any of your other animals to an adjacent square.',
-    'rules.food.html': '<b>New Dice Face (Carrot / Fish):</b> Choose who goes for a treat — send the Bunny to the Carrot or the Bear to the River for Fish.',
-    'rules.run': 'The Panther and the Bear use one star per square, and within one turn they run along a single straight line without turning.',
+    'rules.run': 'The Panther uses one star per square, and within one turn it runs along a single straight line without turning.',
     'rules.h.cells': 'Special squares',
-    'rules.water.html': '<b>Water.</b> Only the Bear goes in. The Squirrel can jump over it; the other animals go around.',
-    'rules.hunt5': 'The Panther and the Bear catch the Bunny and the Squirrel; only a Lion can catch them.',
+    'rules.hunt5': 'A Squirrel on a tree (without a nut) can be caught only by the Lynx and the Panther.',
     'rules.hunt6': 'An animal in a trap can still be caught, but then the hunter is stuck in the trap itself.',
+    'rules.hunt7': 'Only a Lion can catch the Fox, the Lynx and the Panther.',
 
     'label': (team, kind) => (team === 'red' ? 'Red ' : 'Blue ') + EN_ANIMAL[kind],
     'pieceTrapped': 'in a trap',
@@ -499,7 +530,7 @@
     'turnTeam': (team) => (team === 'red' ? 'Red' : 'Blue') + ' team’s turn. Roll the die!',
     'rest': 'Oh, the animals decided to rest! The turn is skipped.',
     'noBonus': (kind, reason) => {
-      if (kind === 'food') return 'Carrot / Fish! But neither the Bunny nor the Bear can go for a treat now. The turn is skipped.';
+      if (kind === 'carrottree') return 'Carrot or Tree! But neither the Bunny nor the Squirrel can jump now. The turn is skipped.';
       if (kind === 'hare') {
         return reason === 'caught'
           ? 'Carrot! But the Bunny is already resting in the den. The turn is skipped.'
@@ -513,13 +544,16 @@
     'noMoves': (n) => 'Rolled ' + enStars(n) + ', but there is nowhere to go. The turn is skipped.',
     'chooseCarrot': 'Carrot! Choose which carrot the Bunny jumps to.',
     'chooseTree': 'Tree! Choose which tree the Squirrel jumps onto.',
-    'chooseFood': 'Carrot / Fish! Who goes for a treat? Tap the Bunny or the Bear.',
+    'chooseCarrotTree': 'Carrot or Tree! Who jumps? Tap the Bunny or the Squirrel.',
     'rolledCpu': (n) => 'Rolled ' + enStars(n) + '. The computer is moving…',
     'rolledYou': (n) => 'You rolled ' + enStars(n) + '. Pick an animal and make ' + enSteps(n) + '.',
     'bonusHare': 'Carrot! The Bunny is eating and can’t be caught.',
     'bonusSquirrel': 'Tree! The Squirrel is nibbling a nut and can’t be reached.',
-    'bonusBear': 'Fish! The Bear jumps into the water for a fish. Nobody can catch him there.',
-    'bonusBearStay': 'Fish! The Bear stays in the water and goes fishing.',
+    'trapFace': (k) => 'Trap! The ' + EN_ANIMAL[k] + ' was the closest and got caught: it misses 2 turns.',
+    'trapFaceAgain': (k) => 'Trap! The ' + EN_ANIMAL[k] + ' was still standing in the trap and got caught again: it misses 2 turns.',
+    'trapChooseAnimal': 'Trap! Several animals are equally close. Choose which one falls into the trap.',
+    'trapChooseCell': (k) => 'Trap! Choose which trap the ' + EN_ANIMAL[k] + ' falls into.',
+    'trapNone': 'Trap! But nobody can fall in. The turn is skipped.',
     'inTrap': (k) => 'The ' + EN_ANIMAL[k] + ' is caught in a trap and misses 2 turns. Rescue it: move another animal next to it!',
     'freed': (kinds, left) => 'Hooray! The ' + kinds.map((k) => EN_ANIMAL[k]).join(' and the ') + (kinds.length > 1 ? ' are' : ' is') + ' free!' + (left ? ' ' + enLeft(left) : ''),
     'trappedTap': (k, n) => 'The ' + EN_ANIMAL[k] + ' is in a trap' + (n === 1 ? ' (last turn).' : ' (' + n + ' more turns).') + ' To rescue it, move another animal next to it.',
@@ -538,7 +572,9 @@
     'winHareText': 'The Bunny ran through the whole forest and escaped!',
     'winTeam': (team) => (team === 'red' ? 'The Red team wins!' : 'The Blue team wins!'),
     'winCpu': 'The computer won. You’ll do it next time!',
-    'winYou': 'You won!'
+    'winYou': 'You won!',
+    'winDrawTitle': 'A draw!',
+    'winDrawText': 'The Lions made friends — friendship wins.'
   };
 
   /* First visit: follow the phone's main language; anything other than RU / SK / CS / EN starts in Russian. */
