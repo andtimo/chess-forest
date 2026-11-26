@@ -315,6 +315,24 @@ svg { display: block; }
 .map-age { margin-top: 1px; font-size: 13px; font-weight: 700; color: var(--muted); }
 .menu-buttons { display: grid; gap: 14px; }
 .cpu-block { display: grid; gap: 10px; }
+/* Trainer «Лесная школа»: above the maps */
+.btn-school {
+  width: 100%; margin-bottom: 16px; gap: 10px; padding-inline: 14px;
+  background: #15aabf; color: #fff; box-shadow: 0 5px 0 #0c8599;
+  text-wrap: balance; /* two even lines on a narrow phone */
+}
+.btn-school:active { box-shadow: 0 2px 0 #0c8599; }
+.school-ico { flex: none; width: 30px; height: 30px; color: #fff; }
+.school-ico svg { width: 100%; height: 100%; }
+/* Score of finished games (kept on this device) */
+.two-block { display: grid; gap: 6px; }
+.score { font-size: 14px; line-height: 1.3; font-weight: 700; color: var(--muted); text-wrap: balance; }
+.score.on { color: var(--ink); }
+.score-cpu { display: grid; gap: 2px; }
+.score-reset { display: grid; justify-items: center; margin-top: -4px; font-size: 14px; color: var(--muted); }
+.link-btn { min-height: 32px; padding: 4px 8px; font-size: 14px; font-weight: 700; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+.score-ask { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; font-weight: 700; }
+.score-ask .btn-small { min-height: 36px; padding: 6px 12px; font-size: 14px; }
 .level { display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--muted); font-size: 15px; }
 .seg { display: inline-flex; background: #eee6d5; border-radius: 13px; padding: 3px; }
 .seg button { min-height: 36px; padding: 6px 14px; border-radius: 10px; font-weight: 700; color: var(--muted); }
@@ -351,6 +369,9 @@ svg { display: block; }
   .seg button { min-height: clamp(36px, 5vh, 52px); font-size: clamp(15px, 2.2vh, 22px); }
   .timer-block { font-size: clamp(15px, 2.2vh, 22px); }
   .timer-note { font-size: clamp(14px, 1.9vh, 19px); }
+  .btn-school { margin: 0 0 clamp(12px, 2.6vh, 28px); min-height: clamp(52px, 8vh, 84px); font-size: clamp(18px, 2.8vh, 28px); }
+  .school-ico { width: clamp(30px, 4.6vh, 46px); height: clamp(30px, 4.6vh, 46px); }
+  .score, .link-btn, .score-ask { font-size: clamp(14px, 1.9vh, 19px); }
 }
 /* Phone on its side: everything in the menu must fit without scrolling. */
 @media (min-aspect-ratio: 11/10) and (max-height: 560px) {
@@ -367,6 +388,12 @@ svg { display: block; }
   .timer-note { font-size: 13px; }
   .map-name { font-size: 15px; }
   .map-age { font-size: 13px; }
+  .btn-school { min-height: 42px; padding-block: 6px; margin-bottom: 10px; font-size: 17px; }
+  .school-ico { width: 26px; height: 26px; }
+  .two-block { gap: 3px; }
+  .score, .link-btn, .score-ask { font-size: 13px; }
+  .link-btn { min-height: 26px; padding-block: 2px; }
+  .score-reset { margin-top: -2px; }
 }
 
 /* ---------- Game layout ---------- */
@@ -670,6 +697,155 @@ svg { display: block; }
   .message { font-size: 15px; }
 }
 
+/* ---------- Trainer «Лесная школа» ---------- */
+.school {
+  height: var(--vh);
+  max-width: 640px;
+  margin: 0 auto;
+  display: grid;
+  gap: 10px;
+  grid-template:
+    "top" auto
+    "talk" auto
+    "board" minmax(0, 1fr)
+    "pick" auto
+    / minmax(0, 1fr);
+  padding:
+    max(8px, env(safe-area-inset-top))
+    max(12px, env(safe-area-inset-right))
+    max(10px, env(safe-area-inset-bottom))
+    max(12px, env(safe-area-inset-left));
+}
+.school .topbar { grid-area: top; }
+.school-talk {
+  grid-area: talk;
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 14px;
+  background: #fff;
+  border: 3px solid #15aabf;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .1);
+  min-width: 0;
+}
+.school-talk .message { flex: 1; min-width: 0; min-height: 2.6em; font-size: 17px; }
+.school-progress { flex: none; display: flex; gap: 2px; }
+.school-progress span { width: 26px; height: 26px; }
+.school-progress svg { width: 100%; height: 100%; opacity: .28; filter: grayscale(1); transition: opacity .3s, filter .3s; }
+.school-progress .got svg { opacity: 1; filter: none; animation: pop-in .35s ease-out; }
+.school .board-wrap { grid-area: board; }
+.school .board-frame { position: relative; }
+/* Paw prints and jump arcs lie on the grass, under the treat and the animal */
+.paws { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; overflow: visible; pointer-events: none; fill: #fff; filter: drop-shadow(0 0 3px rgba(255, 240, 150, .95)); }
+.paws .pp { animation: paw-wave 1.5s ease-in-out infinite; }
+.paws .arc { fill: none; stroke: #fff; stroke-width: .075; stroke-linecap: round; stroke-dasharray: .001 .17; animation: march .7s linear infinite; }
+.cell.lit::after {
+  content: "";
+  position: absolute; inset: 7%;
+  border-radius: 16%;
+  background: rgba(255, 255, 255, .22);
+  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .95), 0 0 12px 3px rgba(255, 240, 150, .9);
+}
+.treat {
+  position: absolute; z-index: 1;
+  left: calc(var(--x) * 100% / var(--n));
+  top: calc((var(--n) - 1 - var(--y)) * 100% / var(--n));
+  width: calc(100% / var(--n)); height: calc(100% / var(--n));
+  display: grid; place-items: center;
+  pointer-events: none;
+}
+.treat svg { width: 60%; height: 60%; overflow: visible; animation: bob 1.6s ease-in-out infinite; filter: drop-shadow(0 3px 2px rgba(0, 0, 0, .2)); }
+.treat.pop svg { animation: pop-in .35s ease-out, bob 1.6s ease-in-out .35s infinite; }
+.treat.wiggle svg { animation: wobble .2s ease-in-out 4; }
+.treat.eaten svg { animation: gulp .3s ease-in forwards; }
+.piece.cheer .token { animation: cheer 1s ease-in-out infinite; }
+/* «Хрум!» pops up over the cell */
+.crunch {
+  position: absolute; z-index: 5;
+  left: calc(var(--x) * 100% / var(--n));
+  top: calc((var(--n) - 1 - var(--y)) * 100% / var(--n));
+  width: calc(100% / var(--n)); height: calc(100% / var(--n));
+  display: grid; place-items: center;
+  pointer-events: none;
+  animation: crunch-up 1.2s ease-out forwards;
+  font-weight: 900; color: #e8590c; white-space: nowrap;
+  font-size: max(15px, calc(min(100cqw, 100cqh) * .062));
+  text-shadow: 0 0 4px #fff, 0 0 8px #fff, 0 2px 0 #fff;
+}
+/* Leaf fireworks: each leaf flies from the middle of the board */
+.leaves { position: absolute; inset: 0; z-index: 6; pointer-events: none; overflow: visible; }
+.leaves i { position: absolute; inset: 0; animation: burst 1.7s cubic-bezier(.15, .7, .3, 1) forwards; }
+.leaves i::before {
+  content: "";
+  position: absolute; left: 46.5%; top: 47.5%;
+  width: 7%; height: 5%;
+  background: var(--c);
+  border-radius: 0 100% 0 100%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .08);
+}
+/* Pupils: two rows of three under the board */
+.pupils { grid-area: pick; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.pupil {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  min-width: 0; padding: 6px 4px 5px;
+  background: #fff;
+  border: 3px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 4px 0 var(--line);
+  font-weight: 800; font-size: 14px; line-height: 1.1;
+  transition: border-color .15s, box-shadow .15s, transform .08s;
+}
+.pupil:active { transform: translateY(2px); }
+.pupil[aria-pressed="true"] { border-color: var(--green); box-shadow: 0 4px 0 var(--green-dark), 0 0 0 3px rgba(55, 178, 77, .22); }
+.pupil-ico {
+  position: relative; flex: none;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  border: 3px solid var(--red);
+  background: radial-gradient(circle at 35% 28%, #fff 0%, var(--red-soft) 75%);
+  display: grid; place-items: center;
+}
+.pupil-ico > .animal { width: 88%; height: 88%; overflow: visible; }
+.pupil-star { position: absolute; right: -10px; top: -10px; width: 26px; height: 26px; display: none; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .3)); }
+.pupil-star svg { width: 100%; height: 100%; }
+.pupil.done .pupil-star { display: block; }
+.pupil-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pupils.invite .pupil-ico { animation: breathe 1.2s ease-in-out infinite; }
+.pupils.invite .pupil:nth-child(2n) .pupil-ico { animation-delay: -.6s; }
+
+/* Wide screens: the board on the left, talk and pupils on the right */
+@media (min-aspect-ratio: 11/10) {
+  .school {
+    max-width: calc(var(--vh) + 360px);
+    column-gap: 16px;
+    /* the talk box and the pupils sit together in the middle of the column */
+    grid-template:
+      "board top" auto
+      "board ." minmax(0, 1fr)
+      "board talk" auto
+      "board pick" auto
+      "board ." minmax(0, 1fr)
+      / minmax(0, 1fr) minmax(220px, 340px);
+  }
+  .pupils { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pupil { flex-direction: row; justify-content: flex-start; gap: 10px; padding: 6px 10px 6px 6px; font-size: 16px; }
+}
+@media (min-aspect-ratio: 11/10) and (min-height: 520px) {
+  .school .topbar-title { font-size: 24px; }
+  .school-talk { flex-direction: column; align-items: stretch; text-align: center; padding: 14px; }
+  .school-talk .message { justify-content: center; font-size: 18px; min-height: 3.8em; }
+  .school-progress { justify-content: center; }
+  .school-progress span { width: 32px; height: 32px; }
+}
+@media (min-aspect-ratio: 11/10) and (max-height: 519.98px) {
+  .school { gap: 6px; }
+  .school-talk { padding: 6px 10px; }
+  .school-talk .message { font-size: 15px; min-height: 2.5em; }
+  .school-progress span { width: 22px; height: 22px; }
+  .pupils { gap: 6px; }
+  .pupil { padding-block: 3px; font-size: 15px; }
+  .pupil-ico { width: 40px; height: 40px; }
+}
+
 /* ---------- Dialogs ---------- */
 .modal {
   position: fixed; inset: 0; z-index: 50;
@@ -724,6 +900,7 @@ svg { display: block; }
 .win-pair svg { width: 50%; height: auto; }
 .win-pair svg + svg { animation-delay: -.5s; }
 .win-who { font-weight: 900; font-size: 22px; }
+.small-card .win-score { margin-top: -6px; font-size: 15px; font-weight: 700; color: var(--muted); text-wrap: balance; }
 .win-who.red { color: var(--red-dark); }
 .win-who.blue { color: var(--blue-dark); }
 .confetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
@@ -746,6 +923,13 @@ svg { display: block; }
 @keyframes pop-in { 0% { transform: scale(.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 @keyframes cheer { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-8px) rotate(4deg); } }
 @keyframes fall { to { transform: translateY(110vh) rotate(540deg); } }
+/* Trainer */
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7%); } }
+@keyframes gulp { to { transform: scale(0) rotate(-20deg); opacity: 0; } }
+@keyframes paw-wave { 0%, 100% { opacity: .5; } 35% { opacity: 1; } }
+@keyframes march { to { stroke-dashoffset: -.171; } }
+@keyframes crunch-up { 0% { transform: translateY(0) scale(.5); opacity: 0; } 18% { transform: translateY(-38%) scale(1.15); opacity: 1; } 70% { opacity: 1; } 100% { transform: translateY(-80%) scale(1); opacity: 0; } }
+@keyframes burst { 0% { transform: translate(0, 0) scale(.3) rotate(0); opacity: 1; } 75% { opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(1.1) rotate(var(--r)); opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; }

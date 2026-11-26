@@ -152,7 +152,9 @@
   /* All single steps one animal can make right now. */
   function stepMoves(state, p) {
     const res = [];
-    if (!p || !p.alive || p.trapped > 0) return res;
+    // A protected animal is eating its carrot / nut: it stays put (after the die bonus the turn is over anyway,
+    // and one that walked onto its cell stops there for the rest of the turn).
+    if (!p || !p.alive || p.trapped > 0 || p.shield) return res;
     const map = state.map;
     const n = sizeOf(map);
     const free = (x, y) => inside(x, y, n) && !pieceAt(state, x, y) && canEnter(p.kind, cellType(x, y, map));
@@ -393,11 +395,16 @@
     state.stepsLeft -= 1;
     if (!state.runs) state.runs = {};
     if (RUNNERS[p.kind] && !state.runs[p.id]) state.runs[p.id] = [x - from.x, y - from.y];
-    const intoTrap = cellType(x, y, state.map) === 'trap';
+    const type = cellType(x, y, state.map);
+    const intoTrap = type === 'trap';
     if (intoTrap) { p.trapped = TRAP_TURNS; p.trapFresh = true; }
+    // The Hare walking onto a carrot, the Squirrel jumping onto a tree: protected as with the die face,
+    // and it stays there for the rest of the turn (other animals may use the stars left; your choice, 2026-11-26).
+    const ate = BONUS_CELL[p.kind] === type;
+    if (ate) p.shield = true;
     const freed = intoTrap ? [] : rescue(state, p); // an animal that lands in a trap rescues nobody
 
-    const ev = { piece: p, from, to: { x, y }, captured: captured || null, win: null, turnOver: false, reason: null, trapped: intoTrap, freed };
+    const ev = { piece: p, from, to: { x, y }, captured: captured || null, win: null, turnOver: false, reason: null, trapped: intoTrap, ate, freed };
     if (captured && captured.kind === 'lion') { state.winner = p.team; state.winReason = 'lion'; }
     else if (p.kind === 'hare' && y === farRow(p.team, state.map)) { state.winner = p.team; state.winReason = 'hare'; }
     else if (captured && MAPS[state.map].lionsDraw && state.pieces.every((q) => !q.alive || q.kind === 'lion')) {
@@ -609,7 +616,8 @@
   function positionKey(s) {
     const N = sizeOf(s.map);
     let key = s.stepsLeft + s.phase.charAt(0);
-    for (const p of s.pieces) key += p.alive ? String.fromCharCode(65 + p.y * N + p.x) + (p.trapped > 0 ? p.trapped : '') : '-';
+    // protection counts too: a Squirrel may jump off its tree and back on (then it is eating)
+    for (const p of s.pieces) key += p.alive ? String.fromCharCode(65 + p.y * N + p.x) + (p.trapped > 0 ? p.trapped : '') + (p.shield ? '*' : '') : '-';
     for (const id in s.runs) key += id + s.runs[id].join(',');
     return key;
   }

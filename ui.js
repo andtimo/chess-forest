@@ -64,6 +64,13 @@
     return '<svg viewBox="0 0 160 96" aria-hidden="true" focusable="false">' + body + '</svg>';
   }
 
+  // A paw print centred on (0, 0), toes up, about 64 wide.
+  const PAW = '<ellipse cx="0" cy="14" rx="20" ry="17"/>' +
+    '<ellipse cx="-24" cy="-12" rx="8.5" ry="11" transform="rotate(-20 -24 -12)"/>' +
+    '<ellipse cx="-8.5" cy="-27" rx="8.5" ry="11" transform="rotate(-6 -8.5 -27)"/>' +
+    '<ellipse cx="8.5" cy="-27" rx="8.5" ry="11" transform="rotate(6 8.5 -27)"/>' +
+    '<ellipse cx="24" cy="-12" rx="8.5" ry="11" transform="rotate(20 24 -12)"/>';
+
   const ART = {
     lion() {
       let mane = '';
@@ -248,6 +255,20 @@
       );
     },
     star() { return svg(star(50, 52, 44)); },
+    // Trainer treat for the Fox and the Lynx
+    berry() {
+      let seeds = '';
+      [[36, 46], [50, 44], [64, 46], [30, 60], [43, 58], [57, 58], [70, 60], [38, 72], [50, 70], [62, 72], [50, 82]].forEach((c) => {
+        seeds += '<ellipse cx="' + c[0] + '" cy="' + c[1] + '" rx="2" ry="3" fill="#ffe066"/>';
+      });
+      return svg(
+        '<path d="M50 94C30 84 15 66 17 47c2-14 18-19 33-15 15-4 31 1 33 15 2 19-13 37-33 47z" fill="#e8384f"/>' +
+        '<path d="M27 46c2-6 8-9 14-9" fill="none" stroke="#ff8fa0" stroke-width="4" stroke-linecap="round"/>' + seeds +
+        '<path d="M50 36L33 24l11 1 6-15 6 15 11-1z" fill="#2f9e44" stroke="#2b8a3e" stroke-width="2" stroke-linejoin="round"/>' +
+        '<rect x="48" y="4" width="4" height="12" rx="2" fill="#2b8a3e"/>'
+      );
+    },
+    paw() { return svg('<g fill="currentColor" transform="translate(50 54)">' + PAW + '</g>'); },
     house() {
       return svg(
         '<path d="M18 46h64v42H18z" fill="#e2b077"/>' +
@@ -386,6 +407,27 @@
     o.start(at);
     o.stop(at + dur + 0.03);
   }
+  /* A short burst of filtered noise (crunching, wind). */
+  function noise(a, at, len, freq, q, vol) {
+    const buf = a.createBuffer(1, Math.floor(a.sampleRate * len), a.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+    const src = a.createBufferSource();
+    src.buffer = buf;
+    const f = a.createBiquadFilter();
+    f.type = 'bandpass';
+    f.Q.value = q;
+    f.frequency.setValueAtTime(freq, at);
+    const g = a.createGain();
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.exponentialRampToValueAtTime(vol, at + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + len);
+    src.connect(f);
+    f.connect(g);
+    g.connect(a.destination);
+    src.start(at);
+    src.stop(at + len + 0.02);
+  }
   function sfx(name) {
     const a = audio();
     if (!a) return;
@@ -404,6 +446,12 @@
         case 'trap': tone(a, 260, t0, 0.06, 'square', 0.08, 140); tone(a, 150, t0 + 0.07, 0.16, 'square', 0.07, 70); break;
         case 'free': [587, 880, 1175].forEach((f, i) => tone(a, f, t0 + i * 0.08, 0.13, 'sine', 0.12)); break;
         // Turn timer: a quiet clock in the last seconds, and a soft gust of wind when time is up.
+        // Trainer: «Хрум!» (three crunches and a happy ding), and a soft "not there"
+        case 'crunch':
+          for (let i = 0; i < 3; i++) noise(a, t0 + i * 0.085, 0.07, 1500 + Math.random() * 1200, 1.4, 0.5);
+          tone(a, 990, t0 + 0.3, 0.14, 'sine', 0.11, 1480);
+          break;
+        case 'nope': tone(a, 360, t0, 0.12, 'sine', 0.1, 300); tone(a, 280, t0 + 0.14, 0.18, 'sine', 0.09, 220); break;
         case 'tick': tone(a, 1250, t0, 0.035, 'triangle', 0.05); break;
         case 'tock': tone(a, 950, t0, 0.035, 'triangle', 0.05); break;
         case 'whoosh': {
@@ -447,14 +495,19 @@
     clockRed: byId('clockRed'), clockBlue: byId('clockBlue'), timerNote: byId('timerNote'),
     topTitle: byId('topTitle'), rulesMap: byId('rulesMap'),
     rules: byId('rules'), quit: byId('quit'), win: byId('win'),
-    winArt: byId('winArt'), winTitle: byId('winTitle'), winText: byId('winText'), winWho: byId('winWho'),
-    confetti: byId('confetti'), again: byId('btnAgain')
+    winArt: byId('winArt'), winTitle: byId('winTitle'), winText: byId('winText'), winWho: byId('winWho'), winScore: byId('winScore'),
+    confetti: byId('confetti'), again: byId('btnAgain'),
+    scoreTwo: byId('scoreTwo'), scoreCpu: byId('scoreCpu'), scoreReset: byId('scoreReset'),
+    btnScoreReset: byId('btnScoreReset'), scoreAsk: byId('scoreAsk'),
+    school: byId('school'), schoolBoard: byId('schoolBoard'), schoolPieces: byId('schoolPieces'), paws: byId('schoolPaws'),
+    schoolMsg: byId('schoolMsg'), schoolProgress: byId('schoolProgress'), leaves: byId('schoolLeaves'), pupils: byId('pupils')
   };
 
   const CPU_TEAM = 'blue';
   let state = null;
   let mode = 'two'; // 'two' | 'cpu'
   let level = 'easy'; // 'easy' | 'smart'
+  let gameLevel = 'easy'; // the level the current game is played at (for the score)
   let games = 0;
   let session = 0; // changes on every new game or exit, so stale timers stop
   let busy = false; // an animation or the computer is playing: taps are ignored
@@ -601,6 +654,11 @@
     }
     document.querySelectorAll('.mini').forEach((m) => { m.setAttribute('aria-label', t('label', m.dataset.team, m.dataset.kind)); });
     renderWho();
+    renderScore();
+    if (sc.cells.length) {
+      schoolRender();
+      if (sc.msg) sayS.apply(null, [sc.msg[0]].concat(sc.msg[1]));
+    }
     setSound(soundOn);
     if (state) renderClock();
     if (lastMsg) say.apply(null, [lastMsg[0]].concat(lastMsg[1]));
@@ -960,6 +1018,14 @@
       await passTurn(my);
       return true;
     }
+    if (ev.ate) {
+      // the Hare walked onto a carrot / the Squirrel jumped onto a tree: it eats and stays there
+      sfx('bonus');
+      say('ate', ev.piece.kind, ev.turnOver || ev.freed.length ? 0 : state.stepsLeft);
+      refresh();
+      await pause(ev.turnOver || ev.freed.length ? 2200 : 1200);
+      if (my !== session) return true;
+    }
     if (ev.freed.length) {
       sfx('free');
       say('freed', kindsOf(ev.freed), ev.turnOver ? 0 : state.stepsLeft);
@@ -969,7 +1035,7 @@
     }
     if (ev.turnOver) {
       if (ev.reason === 'capture') await pause(1700);
-      else if (ev.reason === 'stuck') { say('stuck'); await pause(1300); }
+      else if (ev.reason === 'stuck' && !ev.ate) { say('stuck'); await pause(1300); }
       else await pause(450);
       await passTurn(my);
       return true;
@@ -1023,7 +1089,7 @@
     busy = false;
     selectedId = F.stepMoves(state, F.getPiece(state, id)).length ? id : null;
     autoSelect();
-    if (!ev.freed.length) say('left', state.stepsLeft); // the "set free" message already said it
+    if (!ev.freed.length && !ev.ate) say('left', state.stepsLeft); // the "eats" / "set free" message already said it
     refresh();
   }
 
@@ -1119,9 +1185,65 @@
     else el.menu.hidden = false;
   }
 
+  /* ------------------------------------------------------------------ */
+  /* Score: finished games on this device, per computer level and Red vs Blue */
+  /* ------------------------------------------------------------------ */
+
+  const SCORE_KEY = 'forest-score';
+  function blankScore() { return { easy: { w: 0, l: 0, d: 0 }, smart: { w: 0, l: 0, d: 0 }, two: { red: 0, blue: 0, d: 0 } }; }
+  function loadScore() {
+    const sc0 = blankScore();
+    try {
+      const raw = JSON.parse(load(SCORE_KEY) || 'null');
+      if (raw) {
+        for (const k in sc0) {
+          for (const f in sc0[k]) {
+            const v = raw[k] && raw[k][f];
+            if (Number.isInteger(v) && v >= 0) sc0[k][f] = v;
+          }
+        }
+      }
+    } catch (e) { /* a broken entry starts from zero */ }
+    return sc0;
+  }
+  let score = loadScore();
+  const cpuGames = (lv) => score[lv].w + score[lv].l + score[lv].d;
+  const twoGames = () => score.two.red + score.two.blue + score.two.d;
+
+  /* Called once, when a game ends. Leaving a game midway counts for nobody. */
+  function recordResult() {
+    const draw = state.winReason === 'draw';
+    if (mode === 'cpu') {
+      const r = score[gameLevel];
+      if (draw) r.d++;
+      else if (state.winner === CPU_TEAM) r.l++;
+      else r.w++;
+    } else if (draw) score.two.d++;
+    else score.two[state.winner]++;
+    save(SCORE_KEY, JSON.stringify(score));
+    renderScore();
+  }
+
+  /* Menu: Red vs Blue under «Играть вдвоём», each computer level that has games under the level switch. */
+  function renderScore() {
+    el.scoreTwo.hidden = !twoGames();
+    el.scoreTwo.textContent = twoGames() ? t('score.two', score.two) : '';
+    const levels = ['easy', 'smart'].filter((lv) => cpuGames(lv) > 0);
+    el.scoreCpu.hidden = !levels.length;
+    el.scoreCpu.innerHTML = levels.map((lv) =>
+      '<p class="score' + (lv === level ? ' on' : '') + '">' + t('score.cpu', lv, score[lv]) + '</p>').join('');
+    el.scoreReset.hidden = !twoGames() && !levels.length;
+    if (el.scoreReset.hidden) closeScoreAsk();
+  }
+  function closeScoreAsk() {
+    el.scoreAsk.hidden = true;
+    el.btnScoreReset.hidden = false;
+  }
+
   function startGame(newMode) {
     audio(); // unlock sound while we are inside a tap
     mode = newMode;
+    gameLevel = level;
     session++;
     games++;
     state = F.newGame(games % 2 === 1 ? 'red' : 'blue', mapId);
@@ -1169,6 +1291,7 @@
     el.quit.hidden = true;
     el.game.hidden = true;
     el.menu.hidden = false;
+    closeScoreAsk();
   }
 
   function renderWin() {
@@ -1179,6 +1302,7 @@
       el.winTitle.textContent = t('winDrawTitle');
       el.winText.textContent = t('winDrawText');
       el.winWho.hidden = true;
+      renderWinScore();
       return;
     }
     const lion = state.winReason === 'lion';
@@ -1188,11 +1312,17 @@
     el.winWho.hidden = false;
     el.winWho.textContent = mode === 'cpu' ? t(w === CPU_TEAM ? 'winCpu' : 'winYou') : t('winTeam', w);
     el.winWho.className = 'win-who ' + w;
+    renderWinScore();
+  }
+  /* Under the result: the score of this kind of game (this computer level, or Red vs Blue). */
+  function renderWinScore() {
+    el.winScore.textContent = mode === 'cpu' ? t('score.cpu', gameLevel, score[gameLevel]) : t('score.two', score.two);
   }
 
   function showWin() {
     busy = true;
     refresh();
+    recordResult();
     renderWin();
     const colours = ['#e5484d', '#2f7df6', '#ffc93c', '#37b24d', '#ff922b', '#b267e6'];
     let bits = '';
@@ -1227,9 +1357,338 @@
 
   function setSound(on) {
     soundOn = on;
-    el.sound.innerHTML = soundIcon(on);
-    el.sound.setAttribute('aria-pressed', on ? 'true' : 'false');
-    el.sound.setAttribute('aria-label', t(on ? 'sound.on' : 'sound.off'));
+    document.querySelectorAll('.btn-sound').forEach((b) => { // the game's and the trainer's
+      b.innerHTML = soundIcon(on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.setAttribute('aria-label', t(on ? 'sound.on' : 'sound.off'));
+    });
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Trainer «Лесная школа»: one animal alone on a 5x5 board learns its move */
+  /* ------------------------------------------------------------------ */
+  // Tap the animal: paw prints lead to every cell it can reach, and one of them has a treat.
+  // Tap the treat: the animal goes there, «Хрум!», and the next treat appears. Four treats, then leaf fireworks.
+
+  const PUPILS = ['hare', 'lion', 'squirrel', 'fox', 'lynx', 'panther'];
+  const TREAT = { hare: 'carrot', squirrel: 'nut', fox: 'berry', lynx: 'berry', lion: 'star', panther: 'star' };
+  const SCHOOL_COL = { hare: 0, fox: 1, lion: 2, lynx: 3, squirrel: 4, panther: 2 }; // start on row 1, as on Map 1 (Panther c1)
+  const SERIES = 4; // treats per animal
+  const SN = 5;
+  const DIRS8 = [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]];
+  const sc = {
+    kind: null, x: 0, y: 0, prev: null, treat: null, eaten: 0, selected: false, busy: false,
+    run: 0, // changes on every new pupil or exit, so stale animations stop
+    cells: [], piece: null, treatEl: null, msg: null,
+    // animals that finished a series (a gold star), remembered on this device
+    done: new Set((load('forest-school') || '').split(',').filter((k) => PUPILS.indexOf(k) >= 0))
+  };
+
+  /* Cells the animal reaches in one move, as in the game: one step (the Hare only forward, the Squirrel an L-jump);
+     the Panther a straight run of 1-3 cells. */
+  function schoolMoves(kind, x, y) {
+    if (kind === 'panther') {
+      const res = [];
+      for (const d of DIRS8) {
+        for (let n = 1; n <= 3; n++) {
+          const a = x + d[0] * n;
+          const b = y + d[1] * n;
+          if (a < 0 || b < 0 || a >= SN || b >= SN) break;
+          res.push({ x: a, y: b });
+        }
+      }
+      return res;
+    }
+    const g = F.newGame('red', 1); // the game's own step rules, on an otherwise empty board
+    for (const q of g.pieces) q.alive = false;
+    const p = F.getPiece(g, 'red-' + kind);
+    p.alive = true;
+    p.x = x;
+    p.y = y;
+    return F.stepMoves(g, p).map((m) => ({ x: m.x, y: m.y }));
+  }
+
+  function sayS(key) {
+    const args = Array.prototype.slice.call(arguments, 1);
+    sc.msg = [key, args];
+    el.schoolMsg.textContent = t.apply(null, [key].concat(args));
+  }
+
+  function buildSchool() {
+    for (let y = SN - 1; y >= 0; y--) {
+      for (let x = 0; x < SN; x++) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'cell grass' + ((x + y) % 2 ? ' alt' : '');
+        b.dataset.x = x;
+        b.dataset.y = y;
+        sc.cells[y * SN + x] = b;
+        el.schoolBoard.insertBefore(b, el.paws);
+      }
+    }
+    el.pupils.innerHTML = PUPILS.map((k) =>
+      '<button type="button" class="pupil" data-kind="' + k + '" aria-pressed="false"><span class="pupil-ico">' + ART[k]() +
+      '<span class="pupil-star">' + ART.star() + '</span></span><span class="pupil-name"></span></button>').join('');
+    el.pupils.querySelectorAll('.pupil').forEach((b) => b.addEventListener('click', () => pickPupil(b.dataset.kind)));
+  }
+
+  function showSchool() {
+    audio(); // unlock sound while we are inside a tap
+    if (!sc.cells.length) buildSchool();
+    sc.run++;
+    sc.kind = null;
+    sc.piece = null;
+    sc.treatEl = null;
+    sc.selected = false;
+    sc.busy = false;
+    sc.eaten = 0;
+    el.schoolPieces.innerHTML = '';
+    el.leaves.innerHTML = '';
+    el.menu.hidden = true;
+    el.school.hidden = false;
+    sayS('school.pick');
+    schoolRender();
+  }
+  function leaveSchool() {
+    sc.run++;
+    el.school.hidden = true;
+    el.menu.hidden = false;
+  }
+
+  function pickPupil(kind) {
+    audio();
+    sfx('tap');
+    sc.run++;
+    sc.kind = kind;
+    sc.x = SCHOOL_COL[kind];
+    sc.y = 0;
+    sc.prev = null;
+    sc.eaten = 0;
+    sc.selected = false;
+    sc.busy = false;
+    el.leaves.innerHTML = '';
+    el.schoolPieces.innerHTML = '';
+    sc.treatEl = document.createElement('span');
+    sc.treatEl.className = 'treat pop';
+    sc.treatEl.innerHTML = ART[TREAT[kind]]();
+    sc.piece = makePiece({ team: 'red', kind });
+    el.schoolPieces.appendChild(sc.treatEl);
+    el.schoolPieces.appendChild(sc.piece);
+    let pg = '';
+    for (let i = 0; i < SERIES; i++) pg += '<span>' + ART[TREAT[kind]]() + '</span>';
+    el.schoolProgress.innerHTML = pg;
+    placeTreat();
+    sayS('school.tap', kind);
+    schoolRender();
+  }
+
+  /* The next treat: on a random cell the animal can reach, but not back where it just came from. */
+  function placeTreat() {
+    const moves = schoolMoves(sc.kind, sc.x, sc.y);
+    let pool = moves.filter((m) => !sc.prev || m.x !== sc.prev.x || m.y !== sc.prev.y);
+    if (!pool.length) pool = moves; // a corner with one way out
+    sc.treat = pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  function schoolRender() {
+    const kind = sc.kind;
+    const finished = !!kind && sc.eaten >= SERIES;
+    const moves = kind && sc.selected ? schoolMoves(kind, sc.x, sc.y) : [];
+    for (const c of sc.cells) {
+      const x = Number(c.dataset.x);
+      const y = Number(c.dataset.y);
+      const treatHere = !!kind && !finished && !!sc.treat && sc.treat.x === x && sc.treat.y === y;
+      c.classList.toggle('lit', moves.some((m) => m.x === x && m.y === y));
+      c.setAttribute('aria-label', t('school.cell', COLS[x] + (y + 1), treatHere ? TREAT[kind] : null));
+    }
+    if (sc.piece) {
+      sc.piece.style.setProperty('--x', sc.x);
+      sc.piece.style.setProperty('--y', sc.y);
+      sc.piece.dataset.x = sc.x;
+      sc.piece.dataset.y = sc.y;
+      sc.piece.classList.toggle('movable', !sc.busy && !sc.selected && !finished);
+      sc.piece.classList.toggle('selected', sc.selected);
+      sc.piece.classList.toggle('cheer', finished && !sc.busy);
+      sc.piece.setAttribute('aria-label', t('school.name', kind));
+    }
+    if (sc.treatEl && sc.treat) {
+      sc.treatEl.style.setProperty('--x', sc.treat.x);
+      sc.treatEl.style.setProperty('--y', sc.treat.y);
+      sc.treatEl.dataset.tx = sc.treat.x; // for the tests
+      sc.treatEl.dataset.ty = sc.treat.y;
+    }
+    drawPaws(moves);
+    el.schoolProgress.hidden = !kind;
+    if (kind) {
+      el.schoolProgress.querySelectorAll('span').forEach((n, i) => n.classList.toggle('got', i < sc.eaten));
+      el.schoolProgress.setAttribute('aria-label', t('school.progress', sc.eaten, SERIES));
+    }
+    renderPupils();
+  }
+
+  function renderPupils() {
+    el.pupils.querySelectorAll('.pupil').forEach((b) => {
+      const k = b.dataset.kind;
+      b.querySelector('.pupil-name').textContent = t('school.name', k);
+      b.setAttribute('aria-pressed', sc.kind === k ? 'true' : 'false');
+      b.classList.toggle('done', sc.done.has(k));
+      b.setAttribute('aria-label', t('school.pupil', k, sc.done.has(k)));
+    });
+    // nobody chosen yet, or the series is over: the pupils invite a tap
+    el.pupils.classList.toggle('invite', !sc.kind || (sc.eaten >= SERIES && !sc.busy));
+  }
+
+  /* Glowing paw prints: a straight trail (the Squirrel: a dotted jump arc) to every cell the animal can reach. */
+  const n3 = (v) => v.toFixed(3);
+  function pawAt(x, y, dx, dy, delay) {
+    const deg = Math.atan2(dy, dx) * 180 / Math.PI + 90; // toes point the way the animal goes
+    return '<g class="pp" style="animation-delay:' + delay.toFixed(2) + 's" transform="translate(' + n3(x) + ' ' + n3(y) +
+      ') rotate(' + deg.toFixed(1) + ') scale(.0034)">' + PAW + '</g>';
+  }
+  function drawPaws(moves) {
+    if (!moves.length) { el.paws.innerHTML = ''; return; }
+    // board units, y down: the centre of cell (x, y) is (x + .5, SN - .5 - y)
+    const ax = sc.x + 0.5;
+    const ay = SN - 0.5 - sc.y;
+    let out = '';
+    if (sc.kind === 'squirrel') {
+      moves.forEach((m, i) => {
+        const bx = m.x + 0.5;
+        const by = SN - 0.5 - m.y;
+        // every jump bows to the same side, like a leap through the air
+        const qx = (ax + bx) / 2 + (by - ay) * 0.3;
+        const qy = (ay + by) / 2 - (bx - ax) * 0.3;
+        out += '<path class="arc" d="M' + n3(ax) + ' ' + n3(ay) + 'Q' + n3(qx) + ' ' + n3(qy) + ' ' + n3(bx) + ' ' + n3(by) + '"/>';
+        out += pawAt(bx, by, bx - qx, by - qy, 0.2 + i * 0.08);
+      });
+    } else {
+      // one trail per direction, out to the farthest cell reached that way (the Panther: up to 3)
+      const far = {};
+      for (const m of moves) {
+        const dx = Math.sign(m.x - sc.x);
+        const dy = Math.sign(m.y - sc.y);
+        const n = Math.max(Math.abs(m.x - sc.x), Math.abs(m.y - sc.y));
+        const key = dx + ',' + dy;
+        if (!far[key] || far[key].n < n) far[key] = { dx, dy, n };
+      }
+      for (const key in far) {
+        const d = far[key];
+        const unit = Math.hypot(d.dx, d.dy);
+        const ux = d.dx / unit;
+        const uy = -d.dy / unit;
+        const len = d.n * unit;
+        let i = 0;
+        for (let s0 = 0.44; s0 <= len - 0.1; s0 += 0.33, i++) {
+          const side = i % 2 ? 0.075 : -0.075; // left, right, left: like real footprints
+          out += pawAt(ax + ux * s0 - uy * side, ay + uy * s0 + ux * side, ux, uy, i * 0.13);
+        }
+      }
+    }
+    el.paws.innerHTML = out;
+  }
+
+  function schoolTap(x, y) {
+    if (!sc.kind || sc.busy || sc.eaten >= SERIES) return;
+    if (x === sc.x && y === sc.y) {
+      if (!sc.selected) {
+        sc.selected = true;
+        sfx('tap');
+        sayS('school.go', TREAT[sc.kind]);
+        schoolRender();
+      }
+      return;
+    }
+    if (!sc.selected) {
+      // a tap on the board before the animal: first the animal
+      sfx('nope');
+      nudge(sc.piece);
+      sayS('school.first', sc.kind);
+      return;
+    }
+    if (sc.treat.x === x && sc.treat.y === y) { schoolEat(); return; }
+    // another cell: the animal shakes its head and the treat wiggles
+    const reach = schoolMoves(sc.kind, sc.x, sc.y).some((m) => m.x === x && m.y === y);
+    sfx('nope');
+    nudge(sc.piece);
+    wiggle(sc.treatEl);
+    if (reach) sayS('school.wrong', TREAT[sc.kind]);
+    else sayS('school.cannot', sc.kind);
+  }
+  function wiggle(node) {
+    node.classList.remove('wiggle');
+    void node.offsetWidth; // restart the animation
+    node.classList.add('wiggle');
+    setTimeout(() => node.classList.remove('wiggle'), 800);
+  }
+
+  async function schoolEat() {
+    const my = sc.run;
+    sc.busy = true;
+    sc.selected = false;
+    sc.prev = { x: sc.x, y: sc.y };
+    sc.x = sc.treat.x;
+    sc.y = sc.treat.y;
+    sc.piece.classList.add('moving');
+    if (sc.kind === 'squirrel') { sc.piece.classList.add('hop'); sfx('hop'); } else sfx('step');
+    schoolRender();
+    await pause(380);
+    if (my !== sc.run) return;
+    sc.piece.classList.remove('moving', 'hop');
+    sfx('crunch');
+    sc.treatEl.classList.remove('pop');
+    sc.treatEl.classList.add('eaten');
+    crunchBubble(sc.x, sc.y);
+    sc.eaten++;
+    if (sc.eaten >= SERIES) {
+      sc.done.add(sc.kind);
+      save('forest-school', PUPILS.filter((k) => sc.done.has(k)).join(','));
+      sayS('school.done', sc.kind);
+      schoolRender();
+      await pause(450);
+      if (my !== sc.run) return;
+      leafBurst();
+      sfx('win');
+      sc.busy = false;
+      schoolRender();
+      return;
+    }
+    sayS('school.yum', SERIES - sc.eaten);
+    schoolRender();
+    await pause(700);
+    if (my !== sc.run) return;
+    placeTreat();
+    sc.treatEl.classList.remove('eaten');
+    void sc.treatEl.offsetWidth; // restart the pop-in
+    sc.treatEl.classList.add('pop');
+    sc.busy = false;
+    schoolRender();
+  }
+
+  function crunchBubble(x, y) {
+    const b = document.createElement('span');
+    b.className = 'crunch';
+    b.setAttribute('aria-hidden', 'true');
+    b.textContent = t('school.crunch');
+    b.style.setProperty('--x', x);
+    b.style.setProperty('--y', y);
+    el.schoolPieces.appendChild(b);
+    setTimeout(() => b.remove(), 1300);
+  }
+
+  /* «Салют из листьев»: leaves burst out of the middle of the board. */
+  function leafBurst() {
+    const colours = ['#37b24d', '#2f9e44', '#94d82d', '#ffc93c', '#ff922b', '#e8590c', '#74b816'];
+    let html = '';
+    for (let i = 0; i < 36; i++) {
+      const a = (i / 36) * Math.PI * 2 + Math.random() * 0.35;
+      const d = 26 + Math.random() * 30; // % of the board
+      html += '<i style="--dx:' + (Math.cos(a) * d).toFixed(1) + '%;--dy:' + (Math.sin(a) * d).toFixed(1) + '%;--r:' +
+        Math.round(Math.random() * 900 - 450) + 'deg;--c:' + colours[i % colours.length] +
+        ';animation-delay:' + (Math.random() * 0.18).toFixed(2) + 's"></i>';
+    }
+    el.leaves.innerHTML = html;
+    const my = sc.run;
+    setTimeout(() => { if (my === sc.run) el.leaves.innerHTML = ''; }, 2300);
   }
 
   /* ------------------------------------------------------------------ */
@@ -1265,7 +1724,28 @@
     b.addEventListener('click', () => {
       level = b.dataset.level;
       document.querySelectorAll('.seg button[data-level]').forEach((o) => o.setAttribute('aria-checked', o === b ? 'true' : 'false'));
+      renderScore(); // the chosen level's line stands out
     });
+  });
+  // Score reset asks first, in place
+  el.btnScoreReset.addEventListener('click', () => {
+    el.btnScoreReset.hidden = true;
+    el.scoreAsk.hidden = false;
+    byId('btnScoreNo').focus({ preventScroll: true });
+  });
+  byId('btnScoreNo').addEventListener('click', () => { closeScoreAsk(); el.btnScoreReset.focus({ preventScroll: true }); });
+  byId('btnScoreYes').addEventListener('click', () => {
+    score = blankScore();
+    save(SCORE_KEY, null);
+    closeScoreAsk();
+    renderScore();
+  });
+  // Trainer
+  byId('btnSchool').addEventListener('click', showSchool);
+  byId('btnSchoolBack').addEventListener('click', leaveSchool);
+  el.schoolBoard.addEventListener('click', (e) => {
+    const tg = e.target.closest('[data-x]');
+    if (tg) schoolTap(Number(tg.dataset.x), Number(tg.dataset.y));
   });
   document.querySelectorAll('.seg button[data-timer]').forEach((b) => {
     b.addEventListener('click', () => setTimer(Number(b.dataset.timer), true));
@@ -1285,11 +1765,11 @@
   byId('btnQuitYes').addEventListener('click', toMenu);
   byId('btnAgain').addEventListener('click', () => startGame(mode));
   byId('btnWinMenu').addEventListener('click', toMenu);
-  el.sound.addEventListener('click', () => {
+  document.querySelectorAll('.btn-sound').forEach((b) => b.addEventListener('click', () => {
     setSound(!soundOn);
     save('forest-sound', soundOn ? 'on' : 'off');
     sfx('tap');
-  });
+  }));
 
   [el.rules, el.quit].forEach((modal) => {
     modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(modal); });

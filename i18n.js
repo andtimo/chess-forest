@@ -27,6 +27,16 @@
   const ruSteps = (n) => (n === 1 ? '1 шаг' : n + ' шага');
   const ruLeft = (n) => (n === 1 ? 'Остался ' : 'Осталось ') + ruSteps(n) + '.';
   const ruCell = { carrot: ', морковка', tree: ', дерево', trap: ', капкан' };
+  // 1 игра, 2 игры, 5 игр
+  const ruPl = (n, one, few, many) => {
+    const d = n % 10;
+    const h = n % 100;
+    return n + ' ' + (d === 1 && h !== 11 ? one : d >= 2 && d <= 4 && (h < 12 || h > 14) ? few : many);
+  };
+  const ruDraws = (d) => (d ? ' · ' + ruPl(d, 'ничья', 'ничьи', 'ничьих') : '');
+  // Trainer treats: [nominative, accusative]
+  const RU_TREAT = { carrot: ['морковка', 'морковку'], nut: ['орешек', 'орешек'], berry: ['ягодка', 'ягодку'], star: ['звёздочка', 'звёздочку'] };
+  const cap = (w) => w.charAt(0).toUpperCase() + w.slice(1);
 
   const ru = {
     'doc.title': 'Шахматный лес',
@@ -66,6 +76,15 @@
     'menu.timerNote15': 'Блиц для старших детей и взрослых',
     'menu.rules': 'Правила',
     'menu.map': 'Карта',
+    'menu.school': 'Тренажёр: Учимся ходить',
+    // Score (kept on this device): per computer level, and Red against Blue for two players
+    'score.cpu': (lvl, s) => (lvl === 'easy' ? 'Добрый' : 'Хитрый') + ': ' + ruPl(s.w + s.l + s.d, 'игра', 'игры', 'игр') +
+      ' · ' + ruPl(s.w, 'победа', 'победы', 'побед') + ' · ' + ruPl(s.l, 'поражение', 'поражения', 'поражений') + ruDraws(s.d),
+    'score.two': (s) => 'Вдвоём: ' + ruPl(s.red + s.blue + s.d, 'игра', 'игры', 'игр') + ' · Красные ' + s.red + ' · Синие ' + s.blue + ruDraws(s.d),
+    'score.reset': 'Сбросить счёт',
+    'score.ask': 'Сбросить весь счёт?',
+    'score.yes': 'Да, сбросить',
+    'score.no': 'Нет',
     'map.1': 'Солнечная поляна',
     'map.1.age': '2–4 года',
     'map.2': 'Глубокий лес',
@@ -123,6 +142,7 @@
     'rules.carrottree.html': '<b>Морковка или Дерево:</b> выберите сами — Зайчика на Морковку или Белочку на Дерево.',
     'rules.trapface.html': '<b>Капкан:</b> в капкан попадает тот ваш зверь, который ближе всех к свободному капкану (кроме Льва). Если таких несколько — выбираете вы.',
     'rules.bonusNote': 'Пока соперник делает свой ход, Зайчика на морковке и Белочку с орешком поймать нельзя.',
+    'rules.walkIn': 'Если Зайчик сам дойдёт до морковки или Белочка сама допрыгнет до дерева, они тоже кушают: пока соперник делает свой ход, их нельзя поймать. В этот ход они больше не ходят.',
     'rules.m.lynx2.html': '<b>Рысь</b> идёт на одну клетку прямо: вперёд, назад или вбок. Ловит Зайчика и Белочку.',
     'rules.m.panther.html': '<b>Пантера (= Ферзь):</b> Самая быстрая хищница. Ходит во все стороны (прямо и наискосок) на 1, 2 или 3 клетки. Умеет лазить на Дерево за Белкой.',
     'rules.trap.html': '<b>Капкан:</b> Опасная клетка. Если зверь наступит на неё, он пропускает 2 хода (Лев слишком мудр и не может наступить в капкан, а Белка может его перепрыгнуть). Чтобы спасти друга быстрее, подойдите любым своим зверем на соседнюю клетку.',
@@ -205,7 +225,29 @@
     'winCpu': 'Победил компьютер. В следующий раз получится!',
     'winYou': 'Ты победил!',
     'winDrawTitle': 'Ничья!',
-    'winDrawText': 'Львы подружились — победила дружба.'
+    'winDrawText': 'Львы подружились — победила дружба.',
+    // The Hare walked onto a carrot / the Squirrel jumped onto a tree by itself
+    'ate': (k, left) => (k === 'hare'
+      ? 'Зайчик дошёл до морковки! Он кушает, и его нельзя поймать.'
+      : 'Белочка запрыгнула на дерево! Она грызёт орешек, и её не достать.') + (left ? ' ' + ruLeft(left) : ''),
+
+    // Trainer «Лесная школа»
+    'school.title': 'Лесная школа',
+    'school.back': 'Назад',
+    'school.pupils': 'Кого учим',
+    'school.name': (k) => RU_SHEET[k],
+    'school.pupil': (k, done) => RU_SHEET[k] + (done ? ', выучено' : ''),
+    'school.pick': 'Кого будем учить? Нажми на зверя внизу.',
+    'school.tap': (k) => 'Нажми на ' + RU_ANIMAL[k].acc + '!',
+    'school.go': (tr) => 'Видишь следы? Нажми на ' + RU_TREAT[tr][1] + '!',
+    'school.first': (k) => 'Сначала нажми на ' + RU_ANIMAL[k].acc + '.',
+    'school.wrong': (tr) => 'Не сюда! ' + cap(RU_TREAT[tr][0]) + ' вот тут.',
+    'school.cannot': (k) => 'Так ' + RU_ANIMAL[k].nom + (k === 'squirrel' ? ' не прыгает' : ' не ходит') + '. Иди по следам!',
+    'school.yum': (n) => 'Молодец! ' + (n === 1 ? 'Ещё одна вкусняшка.' : 'Ещё ' + n + ' вкусняшки.'),
+    'school.done': (k) => 'Ура! ' + RU_ANIMAL[k].nom + (RU_ANIMAL[k].fem ? ' научилась' : ' научился') + ' ходить! Выбери следующего зверя.',
+    'school.crunch': 'Хрум!',
+    'school.cell': (name, tr) => 'Клетка ' + name + (tr ? ', ' + RU_TREAT[tr][0] : ''),
+    'school.progress': (n, total) => 'Съедено ' + n + ' из ' + total
   };
 
   /* ---------------- Slovenčina ---------------- */
@@ -228,6 +270,10 @@
   const skSteps = (n) => (n === 1 ? '1 krok' : n + ' kroky');
   const skLeft = (n) => (n === 1 ? 'Zostal 1 krok.' : 'Zostali ' + n + ' kroky.');
   const skCell = { carrot: ', mrkva', tree: ', strom', trap: ', pasca' };
+  // 1 hra, 2 hry, 5 hier
+  const skPl = (n, one, few, many) => n + ' ' + (n === 1 ? one : n >= 2 && n <= 4 ? few : many);
+  const skDraws = (d) => (d ? ' · ' + skPl(d, 'remíza', 'remízy', 'remíz') : '');
+  const SK_TREAT = { carrot: ['mrkva', 'mrkvu'], nut: ['oriešok', 'oriešok'], berry: ['bobuľka', 'bobuľku'], star: ['hviezdička', 'hviezdičku'] };
 
   const sk = {
     'doc.title': 'Šachový les',
@@ -267,6 +313,14 @@
     'menu.timerNote15': 'Blesková hra pre staršie deti a dospelých',
     'menu.rules': 'Pravidlá',
     'menu.map': 'Mapa',
+    'menu.school': 'Tréning: Učíme sa chodiť',
+    'score.cpu': (lvl, s) => (lvl === 'easy' ? 'Dobrý' : 'Prefíkaný') + ': ' + skPl(s.w + s.l + s.d, 'hra', 'hry', 'hier') +
+      ' · ' + skPl(s.w, 'výhra', 'výhry', 'výhier') + ' · ' + skPl(s.l, 'prehra', 'prehry', 'prehier') + skDraws(s.d),
+    'score.two': (s) => 'Vo dvojici: ' + skPl(s.red + s.blue + s.d, 'hra', 'hry', 'hier') + ' · Červení ' + s.red + ' · Modrí ' + s.blue + skDraws(s.d),
+    'score.reset': 'Vynulovať skóre',
+    'score.ask': 'Vynulovať celé skóre?',
+    'score.yes': 'Áno, vynulovať',
+    'score.no': 'Nie',
     'map.1': 'Slnečná čistinka',
     'map.1.age': '2–4 roky',
     'map.2': 'Hlboký les',
@@ -322,6 +376,7 @@
     'rules.carrottree.html': '<b>Mrkva alebo Strom:</b> vyberte si sami — Zajačika na Mrkvu alebo Veveričku na Strom.',
     'rules.trapface.html': '<b>Pasca:</b> do pasce sa chytí to vaše zvieratko, ktoré je najbližšie k voľnej pasci (okrem Leva). Ak je takých viac, vyberáte vy.',
     'rules.bonusNote': 'Kým súper robí svoj ťah, Zajačika na mrkve ani Veveričku s orieškom nemožno chytiť.',
+    'rules.walkIn': 'Ak Zajačik sám dôjde k mrkve alebo Veverička sama doskočí na strom, tiež papajú: kým súper robí svoj ťah, nemožno ich chytiť. V tomto ťahu sa už nepohnú.',
     'rules.m.lynx2.html': '<b>Rys</b> prejde o jedno políčko rovno: dopredu, dozadu alebo nabok. Chytá Zajačika a Veveričku.',
     'rules.m.panther.html': '<b>Panter (= Dáma):</b> Najrýchlejší predátor. Chodí všetkými smermi (rovno aj šikmo) o 1, 2 alebo 3 polia. Vie liezť na Strom za Veveričkou.',
     'rules.trap.html': '<b>Pasca:</b> Nebezpečné pole. Ak naň zvieratko stúpi, vynechá 2 ťahy (Lev je príliš múdry a do pasce nestúpi, Veverička ju dokáže preskočiť). Ak chcete kamaráta zachrániť skôr, príďte s akýmkoľvek svojím zvieratkom na susedné pole.',
@@ -403,7 +458,27 @@
     'winCpu': 'Vyhral počítač. Nabudúce to vyjde!',
     'winYou': 'Vyhral si!',
     'winDrawTitle': 'Remíza!',
-    'winDrawText': 'Levy sa spriatelili — vyhralo priateľstvo.'
+    'winDrawText': 'Levy sa spriatelili — vyhralo priateľstvo.',
+    'ate': (k, left) => (k === 'hare'
+      ? 'Zajačik došiel k mrkve! Papá a nikto ho nemôže chytiť.'
+      : 'Veverička vyskočila na strom! Hryzie oriešok a nikto ju nedostane.') + (left ? ' ' + skLeft(left) : ''),
+
+    'school.title': 'Lesná škola',
+    'school.back': 'Späť',
+    'school.pupils': 'Koho učíme',
+    'school.name': (k) => SK_SHEET[k],
+    'school.pupil': (k, done) => SK_SHEET[k] + (done ? ', naučené' : ''),
+    'school.pick': 'Koho budeme učiť? Ťukni na zvieratko dole.',
+    'school.tap': (k) => 'Ťukni na ' + SK_ANIMAL[k].acc + '!',
+    'school.go': (tr) => 'Vidíš stopy? Ťukni na ' + SK_TREAT[tr][1] + '!',
+    'school.first': (k) => 'Najprv ťukni na ' + SK_ANIMAL[k].acc + '.',
+    'school.wrong': (tr) => 'Nie sem! ' + SK_TREAT[tr][0].charAt(0).toUpperCase() + SK_TREAT[tr][0].slice(1) + ' je tamto.',
+    'school.cannot': (k) => 'Tak ' + SK_ANIMAL[k].nom + (k === 'squirrel' ? ' neskáče' : ' nechodí') + '. Choď po stopách!',
+    'school.yum': (n) => 'Výborne! ' + (n === 1 ? 'Ešte jedna maškrta.' : 'Ešte ' + n + ' maškrty.'),
+    'school.done': (k) => 'Hurá! ' + SK_ANIMAL[k].nom + (SK_ANIMAL[k].fem ? ' sa naučila' : ' sa naučil') + ' chodiť! Vyber si ďalšie zvieratko.',
+    'school.crunch': 'Chrum!',
+    'school.cell': (name, tr) => 'Políčko ' + name + (tr ? ', ' + SK_TREAT[tr][0] : ''),
+    'school.progress': (n, total) => 'Zjedené ' + n + ' z ' + total
   };
 
   /* ---------------- English ---------------- */
@@ -419,6 +494,8 @@
   const enSteps = (n) => (n === 1 ? '1 step' : n + ' steps');
   const enLeft = (n) => enSteps(n) + ' left.';
   const enCell = { carrot: ', carrot', tree: ', tree', trap: ', trap' };
+  const enPl = (n, one, many) => n + ' ' + (n === 1 ? one : many);
+  const enDraws = (d) => (d ? ' · ' + enPl(d, 'draw', 'draws') : '');
 
   const en = {
     'doc.title': 'Chess Forest',
@@ -458,6 +535,14 @@
     'menu.timerNote15': 'Blitz for older children and adults',
     'menu.rules': 'Rules',
     'menu.map': 'Map',
+    'menu.school': 'Trainer: Learn the Moves',
+    'score.cpu': (lvl, s) => (lvl === 'easy' ? 'Kind' : 'Clever') + ': ' + enPl(s.w + s.l + s.d, 'game', 'games') +
+      ' · ' + enPl(s.w, 'win', 'wins') + ' · ' + enPl(s.l, 'loss', 'losses') + enDraws(s.d),
+    'score.two': (s) => 'Together: ' + enPl(s.red + s.blue + s.d, 'game', 'games') + ' · Red ' + s.red + ' · Blue ' + s.blue + enDraws(s.d),
+    'score.reset': 'Reset score',
+    'score.ask': 'Reset the whole score?',
+    'score.yes': 'Yes, reset',
+    'score.no': 'No',
     'map.1': 'Sunny Glade',
     'map.1.age': '2–4 yrs',
     'map.2': 'Deep Forest',
@@ -513,6 +598,7 @@
     'rules.carrottree.html': '<b>Carrot or Tree:</b> you choose — send the Bunny to a Carrot or the Squirrel to a Tree.',
     'rules.trapface.html': '<b>Trap:</b> the one of your animals that is closest to a free trap falls into it (not the Lion). If several are equally close, you choose.',
     'rules.bonusNote': 'While the other side takes its turn, the Bunny on a carrot and the Squirrel with a nut can’t be caught.',
+    'rules.walkIn': 'If the Bunny walks to a carrot or the Squirrel jumps onto a tree by itself, it eats too: while the other side takes its turn, it can’t be caught. It doesn’t move again this turn.',
     'rules.m.lynx2.html': '<b>Lynx</b> moves one square straight: forward, back or sideways. Catches the Bunny and the Squirrel.',
     'rules.m.panther.html': '<b>Panther (= Queen):</b> The fastest predator. Moves in all directions (straight and diagonally) by 1, 2, or 3 squares. Can climb the Tree to catch the Squirrel.',
     'rules.trap.html': '<b>Trap:</b> A dangerous square. Any animal stepping on it misses 2 turns (the Lion is too wise to step into a trap, and the Squirrel can jump over it). To rescue a trapped friend early, move any of your other animals to an adjacent square.',
@@ -574,7 +660,27 @@
     'winCpu': 'The computer won. You’ll do it next time!',
     'winYou': 'You won!',
     'winDrawTitle': 'A draw!',
-    'winDrawText': 'The Lions made friends — friendship wins.'
+    'winDrawText': 'The Lions made friends — friendship wins.',
+    'ate': (k, left) => (k === 'hare'
+      ? 'The Bunny reached a carrot! It’s eating and can’t be caught.'
+      : 'The Squirrel jumped onto a tree! It’s nibbling a nut and can’t be reached.') + (left ? ' ' + enLeft(left) : ''),
+
+    'school.title': 'Forest School',
+    'school.back': 'Back',
+    'school.pupils': 'Who learns',
+    'school.name': (k) => EN_SHEET[k],
+    'school.pupil': (k, done) => EN_SHEET[k] + (done ? ', learned' : ''),
+    'school.pick': 'Who will learn today? Tap an animal below.',
+    'school.tap': (k) => 'Tap the ' + EN_ANIMAL[k] + '!',
+    'school.go': (tr) => 'See the paw prints? Tap the ' + tr + '!',
+    'school.first': (k) => 'First tap the ' + EN_ANIMAL[k] + '.',
+    'school.wrong': (tr) => 'Not here! The ' + tr + ' is over there.',
+    'school.cannot': (k) => 'The ' + EN_ANIMAL[k] + (k === 'squirrel' ? ' can’t jump there' : ' can’t go there') + '. Follow the paw prints!',
+    'school.yum': (n) => 'Well done! ' + (n === 1 ? 'One more treat.' : n + ' more treats.'),
+    'school.done': (k) => 'Hooray! The ' + EN_ANIMAL[k] + ' has learned to move! Pick the next animal.',
+    'school.crunch': 'Crunch!',
+    'school.cell': (name, tr) => 'Square ' + name + (tr ? ', ' + tr : ''),
+    'school.progress': (n, total) => n + ' of ' + total + ' eaten'
   };
 
   /* First visit: follow the phone's main language; anything other than RU / SK / CS / EN starts in Russian. */

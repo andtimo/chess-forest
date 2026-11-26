@@ -60,6 +60,8 @@
     <div class="menu-left">
       <h1 class="title" data-t="doc.title"></h1>
       <p class="subtitle" data-t="menu.subtitle"></p>
+      <!-- Trainer «Лесная школа»: one animal at a time learns its move -->
+      <button type="button" class="btn btn-school" id="btnSchool"><span class="school-ico" data-art="paw"></span><span data-t="menu.school"></span></button>
       <!-- Map choice: a tap on a card picks it (remembered on this device) -->
       <div class="map-pick" role="radiogroup" data-t-aria="menu.map">
         <button type="button" class="map-card" role="radio" aria-checked="true" data-map="1">
@@ -84,7 +86,11 @@
         </div>
         <p class="timer-note" id="timerNote" data-t="menu.timerNote0"></p>
       </div>
-      <button type="button" class="btn btn-green" id="btnTwo" data-t="menu.two"></button>
+      <div class="two-block">
+        <button type="button" class="btn btn-green" id="btnTwo" data-t="menu.two"></button>
+        <!-- Score of finished games on this device -->
+        <p class="score" id="scoreTwo" hidden></p>
+      </div>
       <div class="cpu-block">
         <button type="button" class="btn btn-orange" id="btnCpu" data-t="menu.cpu"></button>
         <div class="level">
@@ -94,8 +100,17 @@
             <button type="button" role="radio" aria-checked="false" data-level="smart" data-t="menu.smart"></button>
           </div>
         </div>
+        <div class="score-cpu" id="scoreCpu" hidden></div>
       </div>
       <button type="button" class="btn btn-ghost" id="btnRulesMenu" data-t="menu.rules"></button>
+      <div class="score-reset" id="scoreReset" hidden>
+        <button type="button" class="link-btn" id="btnScoreReset" data-t="score.reset"></button>
+        <div class="score-ask" id="scoreAsk" hidden>
+          <span data-t="score.ask"></span>
+          <button type="button" class="btn btn-small" id="btnScoreYes" data-t="score.yes"></button>
+          <button type="button" class="btn btn-small" id="btnScoreNo" data-t="score.no"></button>
+        </div>
+      </div>
     </div>
   </div>
 </main>
@@ -106,7 +121,7 @@
     <span class="topbar-title" id="topTitle"></span>
     <button type="button" class="chip" id="btnRules" data-t="menu.rules"></button>
     <button type="button" class="chip chip-icon" id="btnAbout" data-t-aria="about"><span data-art="info"></span></button>
-    <button type="button" class="chip chip-icon" id="btnSound" aria-pressed="true"></button>
+    <button type="button" class="chip chip-icon btn-sound" id="btnSound" aria-pressed="true"></button>
   </header>
 
   <div class="team blue" id="teamBlue">
@@ -147,6 +162,29 @@
   </div>
 </main>
 
+<!-- Trainer «Лесная школа»: no die, no opponent, no timer -->
+<main id="school" class="school" hidden>
+  <header class="topbar">
+    <button type="button" class="chip" id="btnSchoolBack" data-t="school.back"></button>
+    <span class="topbar-title" data-t="school.title"></span>
+    <button type="button" class="chip chip-icon btn-sound" id="btnSoundSchool" aria-pressed="true"></button>
+  </header>
+  <div class="school-talk">
+    <p class="message" id="schoolMsg" role="status" aria-live="polite"></p>
+    <span class="school-progress" id="schoolProgress" role="img" hidden></span>
+  </div>
+  <div class="board-wrap">
+    <div class="board-frame">
+      <div class="board" id="schoolBoard">
+        <svg class="paws" id="schoolPaws" viewBox="0 0 5 5" aria-hidden="true" focusable="false"></svg>
+        <div class="pieces" id="schoolPieces"></div>
+      </div>
+      <div class="leaves" id="schoolLeaves" aria-hidden="true"></div>
+    </div>
+  </div>
+  <div class="pupils" id="pupils" role="group" data-t-aria="school.pupils"></div>
+</main>
+
 <div id="rules" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
   <div class="card rules-card">
     <h2 id="rulesTitle" data-t="rules.title"></h2>
@@ -167,6 +205,7 @@
         <li><span class="r-ico r-die" data-art="star"></span><div data-t-html="rules.stars.html"></div></li>
         <li><span class="r-ico r-die"></span><div data-t-html="rules.empty.html"></div></li>
       </ul>
+      <p class="rules-note" data-t="rules.walkIn"></p>
       <p class="rules-timer" data-t="rules.timer"></p>
 
       <h3 data-t="rules.h.moves"></h3>
@@ -205,6 +244,7 @@
         <li><span class="r-ico r-die" data-art="trap"></span><div data-t-html="rules.trapface.html"></div></li>
       </ul>
       <p class="rules-note" data-t="rules.bonusNote"></p>
+      <p class="rules-note" data-t="rules.walkIn"></p>
       <p class="rules-timer" data-t="rules.timer"></p>
 
       <h3 data-t="rules.h.moves"></h3>
@@ -257,6 +297,7 @@
     <h2 id="winTitle"></h2>
     <p id="winText"></p>
     <p class="win-who" id="winWho"></p>
+    <p class="win-score" id="winScore"></p>
     <div class="card-row">
       <button type="button" class="btn btn-green" id="btnAgain" data-t="win.again"></button>
       <button type="button" class="btn btn-ghost" id="btnWinMenu" data-t="win.menu"></button>
